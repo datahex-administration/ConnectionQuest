@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useGameSession } from "@/hooks/use-game-session";
 import { fetchGameResults, GameSessionResult } from "@/lib/game-questions";
 import { generateVoucherPDF } from "@/lib/voucher-generator";
-import { HeartPulse, Gift, Download } from "lucide-react";
+import { HeartPulse, Gift, Download, ArrowLeft } from "lucide-react";
 
 export default function Results() {
   const params = useParams<{ code: string }>();
@@ -206,12 +206,20 @@ export default function Results() {
                   </div>
                 )}
                 
-                <div className="text-center mt-8">
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
                   <Button 
                     onClick={handlePlayAgain}
                     className="bg-accent hover:bg-accent/80 text-white font-semibold py-3 px-8 rounded-full shadow-lg"
                   >
                     Play Again
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-2 py-3 px-5 rounded-full"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Welcome
                   </Button>
                 </div>
               </div>
