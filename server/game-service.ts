@@ -208,23 +208,46 @@ export const gameService = {
     // Generate voucher code
     const voucherCode = `MAWADHA-${nanoid(6).toUpperCase()}`;
     
-    // Determine discount based on match percentage
-    let discount = "10% OFF";
-    if (matchPercentage >= 80) {
-      discount = "30% OFF";
-    } else if (matchPercentage >= 60) {
-      discount = "20% OFF";
-    }
+    // Get active coupon template based on match percentage
+    const couponTemplate = await storage.getActiveCouponTemplate(matchPercentage);
     
-    // Set validity - 3 months from today
+    // Determine discount based on template or fallback to default behavior
+    let discount = "10% OFF";
+    let voucherType = "COUPLE'S DINNER";
+    
+    // Set validity - default 3 months from today
     const validUntil = new Date();
-    validUntil.setMonth(validUntil.getMonth() + 3);
+    
+    if (couponTemplate) {
+      // Use the template data
+      if (couponTemplate.discountType === "percentage") {
+        discount = `${couponTemplate.discountValue}% OFF`;
+      } else {
+        discount = `${couponTemplate.discountValue} OFF`; // Fixed amount
+      }
+      
+      // Set validity based on template validity days
+      validUntil.setDate(validUntil.getDate() + couponTemplate.validityDays);
+      
+      // Use the template name as voucher type
+      voucherType = couponTemplate.name;
+    } else {
+      // Fallback to default behavior if no template found
+      if (matchPercentage >= 80) {
+        discount = "30% OFF";
+      } else if (matchPercentage >= 60) {
+        discount = "20% OFF";
+      }
+      
+      // Default 3-month validity
+      validUntil.setMonth(validUntil.getMonth() + 3);
+    }
     
     // Create voucher
     const voucher = await storage.createVoucher({
       sessionId,
       voucherCode,
-      voucherType: "COUPLE'S DINNER",
+      voucherType,
       discount,
       validUntil,
       downloaded: false

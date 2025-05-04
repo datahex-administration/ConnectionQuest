@@ -385,9 +385,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Results not available" });
       }
       
-      // Create a voucher for the session if match percentage is above threshold
+      // Create a voucher for the session if match percentage is above threshold (50% or higher)
       let voucher = null;
-      if (results.matchPercentage >= 40) {
+      if (results.matchPercentage >= 50) {
         voucher = await gameService.generateVoucher(results.sessionId, results.matchPercentage);
       }
       
