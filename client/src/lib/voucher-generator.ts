@@ -35,8 +35,12 @@ export async function generateVoucherPDF(voucherData: VoucherData): Promise<void
     // Create a gradient fill for the background
     for (let j = 0; j < pageHeight; j += 0.5) {
       const alpha = 1 - (j / pageHeight) * 0.5;
-      doc.setFillColor(rgbPrimary.r, rgbPrimary.g, rgbPrimary.b);
-      doc.setGState(new doc.GState({ opacity: alpha }));
+      // Simpler gradient approach without using GState
+      // Adjust color intensity instead of using transparency
+      const r = Math.round(rgbPrimary.r * alpha + 255 * (1 - alpha));
+      const g = Math.round(rgbPrimary.g * alpha + 255 * (1 - alpha));
+      const b = Math.round(rgbPrimary.b * alpha + 255 * (1 - alpha));
+      doc.setFillColor(r, g, b);
       doc.rect(0, j, pageWidth, 0.5, 'F');
     }
   }
@@ -100,7 +104,14 @@ export async function generateVoucherPDF(voucherData: VoucherData): Promise<void
   // Voucher code in a box
   const codeBoxY = margin + 110;
   doc.setDrawColor(255, 255, 255);
-  doc.setFillColor(255, 255, 255, 0.1); // Semi-transparent white
+  
+  // Semi-transparent white (blended with background color)
+  const whiteAlpha = 0.1;
+  const whiteR = Math.round(255 * whiteAlpha + rgbPrimary.r * (1 - whiteAlpha));
+  const whiteG = Math.round(255 * whiteAlpha + rgbPrimary.g * (1 - whiteAlpha));
+  const whiteB = Math.round(255 * whiteAlpha + rgbPrimary.b * (1 - whiteAlpha));
+  doc.setFillColor(whiteR, whiteG, whiteB);
+  
   doc.roundedRect(pageWidth / 2 - 40, codeBoxY, 80, 12, 2, 2, 'FD');
   
   doc.setFont('courier', 'bold'); // Monospace font for codes

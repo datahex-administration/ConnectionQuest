@@ -145,39 +145,64 @@ export default function Results() {
                 )}
                 
                 {results?.voucher && (
-                  <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 text-center">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="w-16 h-16 bg-primary/20 flex items-center justify-center rounded-full">
-                        <Gift className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1 text-left pl-4">
-                        <h3 className="font-bold text-gray-800">Congratulations!</h3>
-                        <p className="text-gray-600 text-sm">You've earned a special voucher</p>
+                  <div className="mt-10">
+                    <div className="relative bg-gradient-to-b from-primary to-primary/70 p-6 rounded-lg shadow-lg max-w-md mx-auto transform transition-all duration-300 hover:scale-105">
+                      {/* Decorative elements */}
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mt-6 -mr-6"></div>
+                      <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -mb-4 -ml-4"></div>
+                      
+                      {/* Corner decorations */}
+                      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
+                      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
+                      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
+                      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+                      
+                      <div className="relative z-10">
+                        <div className="text-center">
+                          <div className="bg-white/20 text-white inline-block px-4 py-1 rounded-full text-sm font-medium mb-3">
+                            <Gift className="inline-block w-4 h-4 mr-1" /> Congratulations!
+                          </div>
+                          
+                          <h3 className="text-xl font-bold text-white mb-1">You've Earned a Voucher!</h3>
+                          
+                          <div className="my-5 py-2 border-t border-b border-white/30">
+                            <p className="text-white font-bold text-2xl tracking-wide">
+                              {results.voucher.discount}
+                            </p>
+                            <p className="text-white/90 uppercase tracking-widest text-sm">
+                              COUPLE'S DINNER
+                            </p>
+                          </div>
+                          
+                          <div className="bg-white/10 rounded-lg p-3 mb-3">
+                            <p className="text-white font-mono font-bold tracking-wider">
+                              {results.voucher.voucherCode}
+                            </p>
+                          </div>
+                          
+                          <p className="text-white/80 text-xs mb-4">
+                            Valid until: {new Date(results.voucher.validUntil).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        
+                        <Button 
+                          onClick={handleDownloadVoucher}
+                          className="bg-white hover:bg-white/90 text-primary font-semibold py-3 px-4 rounded-lg w-full flex items-center justify-center shadow-lg"
+                          disabled={isDownloading}
+                        >
+                          <Download className="h-5 w-5 mr-2" /> 
+                          {isDownloading ? "Preparing PDF..." : "Download Voucher"}
+                        </Button>
                       </div>
                     </div>
                     
-                    <div className="p-3 bg-primary/5 rounded-lg mb-4">
-                      <p className="text-primary font-bold">{results.voucher.discount} COUPLE'S DINNER</p>
-                      <p className="text-gray-600 text-sm">
-                        Valid until: {new Date(results.voucher.validUntil).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </p>
-                      <p className="bg-white text-primary font-mono font-bold px-4 py-2 rounded mt-2">
-                        {results.voucher.voucherCode}
-                      </p>
-                    </div>
-                    
-                    <Button 
-                      onClick={handleDownloadVoucher}
-                      className="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg w-full flex items-center justify-center"
-                      disabled={isDownloading}
-                    >
-                      <Download className="h-4 w-4 mr-2" /> 
-                      {isDownloading ? "Downloading..." : "Download Voucher"}
-                    </Button>
+                    <p className="text-center text-gray-500 text-xs mt-3">
+                      ↑ Click to download and save your voucher ↑
+                    </p>
                   </div>
                 )}
                 
