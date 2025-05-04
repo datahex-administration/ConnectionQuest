@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 300 33% 98%;
+    --foreground: 300 10% 16%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 300 10% 16%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 300 10% 16%;
+    
+    --primary: 300 53% 37%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 300 20% 96%;
+    --secondary-foreground: 300 53% 37%;
+    
+    --muted: 300 10% 96%;
+    --muted-foreground: 300 5% 45%;
+    
+    --accent: 300 40% 75%;
+    --accent-foreground: 300 10% 16%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 300 20% 88%;
+    --input: 300 20% 88%;
+    --ring: 300 53% 37%;
+    
+    --radius: 0.5rem;
+    
+    --chart-1: 300 53% 37%;
+    --chart-2: 300 40% 75%;
+    --chart-3: 300 20% 96%;
+    --chart-4: 270 53% 37%;
+    --chart-5: 330 53% 37%;
+  }
+  
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-secondary text-foreground;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a5d4' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .card {
+    @apply transition-all duration-300;
+  }
+  .card:hover {
+    @apply transform -translate-y-1 shadow-lg;
+  }
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-white transition-all duration-300;
+  }
+  .btn-primary:hover {
+    @apply transform -translate-y-0.5;
+  }
+  .session-code {
+    @apply tracking-widest text-3xl font-bold;
+  }
+  .bg-pattern {
+    @apply bg-secondary;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-in-out;
+  }
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
