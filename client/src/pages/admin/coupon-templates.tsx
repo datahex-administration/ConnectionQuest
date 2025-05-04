@@ -48,6 +48,16 @@ interface CouponTemplateAPIResponse {
   };
 }
 
+// Helper function to format discount value based on type and currency
+function formatDiscount(type: string, value: string, currency?: string): string {
+  if (type === "percentage") {
+    return `${value}% OFF`;
+  } else {
+    const currencyCode = currency || "AED";
+    return `${currencyCode} ${value} OFF`;
+  }
+}
+
 export default function AdminCouponTemplates() {
   const [, navigate] = useLocation();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -244,14 +254,7 @@ export default function AdminCouponTemplates() {
     toggleStatusMutation.mutate({ id, isActive: !(currentStatus === true) });
   };
 
-  // Format discount value for display
-  const formatDiscount = (type: string, value: string, currency?: string) => {
-    if (type === "percentage") {
-      return `${value}%`;
-    } else {
-      return `${currency || 'AED'} ${value}`;
-    }
-  };
+  // Format discount value for display - this is used in the template
 
   return (
     <div className="container mx-auto">
