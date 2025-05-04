@@ -2,6 +2,8 @@ import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 import NotFound from "@/pages/not-found";
 import Welcome from "@/pages/welcome";
@@ -17,9 +19,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Welcome} />
       <Route path="/register" component={Registration} />
-      <Route path="/code-session" component={CodeSession} />
-      <Route path="/game/:code" component={Game} />
-      <Route path="/results/:code" component={Results} />
+      <ProtectedRoute path="/code-session" component={CodeSession} />
+      <ProtectedRoute path="/game/:code" component={Game} />
+      <ProtectedRoute path="/results/:code" component={Results} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route component={NotFound} />
@@ -30,10 +32,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="container mx-auto p-4 min-h-screen">
-        <Router />
-        <Toaster />
-      </div>
+      <AuthProvider>
+        <div className="container mx-auto p-4 min-h-screen">
+          <Router />
+          <Toaster />
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

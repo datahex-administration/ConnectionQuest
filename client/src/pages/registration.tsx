@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,9 +11,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useGameSession } from "@/hooks/use-game-session";
-import { apiRequest } from "@/lib/queryClient";
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 
+// Define form schema
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   gender: z.enum(["male", "female", "other", "prefer-not-to-say"], {
@@ -26,49 +27,43 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function Registration() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { setUserId } = useGameSession({ redirectIfNoUser: false });
+  const { user, registerMutation } = useAuth();
 
+  // Form setup
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      gender: undefined,
-      age: undefined,
+      gender: undefined as any,
+      age: undefined as any,
       whatsappNumber: "",
     },
   });
 
-  async function onSubmit(values: FormValues) {
-    setIsSubmitting(true);
-    
-    try {
-      const response = await apiRequest("POST", "/api/users", values);
-      const user = await response.json();
-      
-      toast({
-        title: "Registration Successful",
-        description: "You've been registered successfully.",
-      });
-
-      // Store user ID in session
-      setUserId(user.id);
-      
-      // Navigate to code session page
+  // Redirect to code session if already logged in
+  useEffect(() => {
+    if (user) {
       navigate("/code-session");
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast({
-        title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
+  }, [user, navigate]);
+
+  // Handle form submission
+  function onSubmit(values: FormValues) {
+    registerMutation.mutate(values, {
+      onSuccess: () => {
+        toast({
+          title: "Registration Successful",
+          description: "You've been registered successfully.",
+        });
+        
+        // Navigation handled in useEffect
+      }
+    });
   }
+
+  if (user) return null; // Prevent flash of content
 
   return (
     <div className="animate-fade-in">
@@ -161,9 +156,14 @@ export default function Registration() {
                   <Button 
                     type="submit" 
                     className="btn-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg"
-                    disabled={isSubmitting}
+                    disabled={registerMutation.isPending}
                   >
-                    {isSubmitting ? "Registering..." : "Continue"}
+                    {registerMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Registering...
+                      </>
+                    ) : "Continue"}
                   </Button>
                 </div>
               </form>
