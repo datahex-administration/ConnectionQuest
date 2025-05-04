@@ -8,6 +8,7 @@ import {
   userAnswers, 
   vouchers,
   settings,
+  couponTemplates,
   User,
   GameSession,
   Question,
@@ -15,7 +16,9 @@ import {
   UserAnswer,
   Voucher,
   Settings,
-  SettingsUpdate
+  SettingsUpdate,
+  CouponTemplate,
+  CouponTemplateInsert
 } from "@shared/schema";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 
@@ -395,6 +398,90 @@ export const storage = {
     return updatedSettings;
   },
 
+  // Coupon Template operations
+  async getCouponTemplates(limit: number = 10, offset: number = 0, search: string = ""): Promise<CouponTemplate[]> {
+    // Build query with search if provided
+    let where = undefined;
+    if (search) {
+      where = sql`LOWER(${couponTemplates.name}) LIKE LOWER(${'%' + search + '%'})`;
+    }
+    
+    const templates = await db.query.couponTemplates.findMany({
+      orderBy: [desc(couponTemplates.createdAt)],
+      limit,
+      offset,
+      where
+    });
+    
+    return templates;
+  },
+  
+  async getTotalCouponTemplates(search: string = ""): Promise<number> {
+    // Base query
+    let query = db.select({ count: count() }).from(couponTemplates);
+    
+    // Apply search filter if provided
+    if (search) {
+      query = query.where(
+        sql`LOWER(${couponTemplates.name}) LIKE LOWER(${'%' + search + '%'})`
+      );
+    }
+    
+    const result = await query;
+    return result[0].count;
+  },
+  
+  async getCouponTemplateById(id: number): Promise<CouponTemplate | undefined> {
+    const template = await db.query.couponTemplates.findFirst({
+      where: eq(couponTemplates.id, id)
+    });
+    return template;
+  },
+  
+  async createCouponTemplate(templateData: CouponTemplateInsert): Promise<CouponTemplate> {
+    const [newTemplate] = await db.insert(couponTemplates).values(templateData).returning();
+    return newTemplate;
+  },
+  
+  async updateCouponTemplate(id: number, templateData: Partial<CouponTemplateInsert>): Promise<CouponTemplate> {
+    const [updatedTemplate] = await db.update(couponTemplates)
+      .set({
+        ...templateData,
+        updatedAt: new Date()
+      })
+      .where(eq(couponTemplates.id, id))
+      .returning();
+    return updatedTemplate;
+  },
+  
+  async deleteCouponTemplate(id: number): Promise<void> {
+    await db.delete(couponTemplates).where(eq(couponTemplates.id, id));
+  },
+  
+  async toggleCouponTemplateStatus(id: number, isActive: boolean): Promise<CouponTemplate> {
+    const [updatedTemplate] = await db.update(couponTemplates)
+      .set({
+        isActive,
+        updatedAt: new Date()
+      })
+      .where(eq(couponTemplates.id, id))
+      .returning();
+    return updatedTemplate;
+  },
+  
+  async getActiveCouponTemplate(matchPercentage: number): Promise<CouponTemplate | undefined> {
+    // Get active template with lowest threshold that matches the given percentage
+    const template = await db.query.couponTemplates.findFirst({
+      where: and(
+        eq(couponTemplates.isActive, true),
+        sql`${couponTemplates.matchPercentageThreshold} <= ${matchPercentage}`
+      ),
+      orderBy: [desc(couponTemplates.matchPercentageThreshold)]
+    });
+    
+    return template;
+  },
+  
   async getRecentParticipants(limit: number = 10, offset: number = 0, search: string = "", statusFilter: string = ""): Promise<(User & { matchStatus: string; sessionCode?: string; voucherCode?: string })[]> {
     // Build the query with search if provided
     let where = undefined;

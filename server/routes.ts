@@ -21,6 +21,8 @@ import {
   insertUserSchema, 
   adminLoginSchema,
   updateSettingsSchema,
+  insertCouponTemplateSchema,
+  CouponTemplateInsert
 } from "@shared/schema";
 import { db } from "@db";
 

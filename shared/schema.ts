@@ -189,6 +189,9 @@ export type Voucher = typeof vouchers.$inferSelect;
 export type Settings = typeof settings.$inferSelect;
 export type SettingsUpdate = z.infer<typeof updateSettingsSchema>;
 
+export type CouponTemplate = typeof couponTemplates.$inferSelect;
+export type CouponTemplateInsert = z.infer<typeof insertCouponTemplateSchema>;
+
 // Admin Login schema (not stored in database)
 export const adminLoginSchema = z.object({
   username: z.string().min(1),
