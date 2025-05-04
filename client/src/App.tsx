@@ -16,6 +16,7 @@ import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminQuestions from "@/pages/admin/questions";
 import AdminParticipants from "@/pages/admin/participants";
+import AdminSettings from "@/pages/admin/settings";
 
 function Router() {
   return (
@@ -37,6 +38,9 @@ function Router() {
       </Route>
       <Route path="/admin/participants">
         {() => <AdminRoute component={AdminParticipants} />}
+      </Route>
+      <Route path="/admin/settings">
+        {() => <AdminRoute component={AdminSettings} />}
       </Route>
       
       <Route component={NotFound} />

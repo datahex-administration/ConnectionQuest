@@ -2,6 +2,9 @@ import express, { type Express, Request, Response, NextFunction } from "express"
 import { createServer, type Server } from "http";
 import session from "express-session";
 import { z } from "zod";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 // Declare session with custom properties
 declare module "express-session" {
@@ -622,6 +625,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching settings:", error);
       return res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  // Set up multer storage configuration for file uploads
+  const multerStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+      // Generate a unique filename using timestamp and original extension
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, 'logo-' + uniqueSuffix + ext);
+    }
+  });
+  
+  const upload = multer({ 
+    storage: multerStorage,
+    limits: {
+      fileSize: 2 * 1024 * 1024 // 2MB max file size
+    },
+    fileFilter: function(req, file, cb) {
+      // Accept only image files
+      if (!file.mimetype.startsWith('image/')) {
+        return cb(new Error('Only image files are allowed'));
+      }
+      cb(null, true);
+    }
+  });
+
+  // Logo upload endpoint
+  app.post('/api/admin/upload/logo', requireAdmin, upload.single('logo'), async (req: AuthRequest, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Generate URL for the uploaded file
+      const fileUrl = `/uploads/${req.file.filename}`;
+      
+      return res.status(200).json({ 
+        url: fileUrl,
+        filename: req.file.filename
+      });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      return res.status(500).json({ error: 'Failed to upload logo' });
     }
   });
 
