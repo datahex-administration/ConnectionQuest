@@ -23,6 +23,11 @@ export interface GameSessionResult {
     question: string;
     answer: string;
   }[];
+  nonMatchingAnswers: {
+    question: string;
+    yourAnswer: string;
+    partnerAnswer: string;
+  }[];
   sessionId: number;
   voucher?: {
     voucherId: number;

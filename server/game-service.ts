@@ -17,6 +17,11 @@ export interface MatchResult {
     question: string;
     answer: string;
   }[];
+  nonMatchingAnswers: {
+    question: string;
+    yourAnswer: string;
+    partnerAnswer: string;
+  }[];
   sessionId: number;
 }
 
@@ -127,31 +132,50 @@ export const gameService = {
       });
     });
 
-    // Find matching answers (only for common questions)
-    const commonQuestions = await storage.getQuestions("common");
+    // Get all questions
+    const allQuestions = await storage.getQuestions();
+    const commonQuestions = allQuestions.filter(q => q.questionType === "common");
     const commonQuestionIds = new Set(commonQuestions.map(q => q.id));
     
     let matchCount = 0;
     const matchingAnswers: { question: string, answer: string }[] = [];
+    const nonMatchingAnswers: { question: string, yourAnswer: string, partnerAnswer: string }[] = [];
+    
+    // First user ID to use as reference for "your" vs "partner's" answers
+    const userId1 = participants[0].id;
+    const userId2 = participants[1].id;
     
     for (const [questionId, answers] of answersByQuestion.entries()) {
-      // Skip if not a common question or if we don't have answers from both participants
+      // Only process common questions with answers from both participants
       if (!commonQuestionIds.has(questionId) || answers.length !== 2) {
         continue;
       }
       
+      // Find the question text
+      const question = allQuestions.find(q => q.id === questionId);
+      if (!question) continue;
+      
+      // Sort answers by user ID to keep consistent "your" vs "partner's"
+      const sortedAnswers = answers.sort((a, b) => a.userId - b.userId);
+      const yourAnswerObj = sortedAnswers.find(a => a.userId === userId1);
+      const partnerAnswerObj = sortedAnswers.find(a => a.userId === userId2);
+      
+      if (!yourAnswerObj || !partnerAnswerObj) continue;
+      
       // Check if answers match
-      if (answers[0].answer === answers[1].answer) {
+      if (yourAnswerObj.answer === partnerAnswerObj.answer) {
         matchCount++;
-        
-        // Find the question text
-        const question = commonQuestions.find(q => q.id === questionId);
-        if (question) {
-          matchingAnswers.push({
-            question: question.text,
-            answer: answers[0].answer
-          });
-        }
+        matchingAnswers.push({
+          question: question.text,
+          answer: yourAnswerObj.answer
+        });
+      } else {
+        // If answers don't match, add to nonMatchingAnswers
+        nonMatchingAnswers.push({
+          question: question.text,
+          yourAnswer: yourAnswerObj.answer,
+          partnerAnswer: partnerAnswerObj.answer
+        });
       }
     }
     
@@ -170,6 +194,7 @@ export const gameService = {
     return {
       matchPercentage,
       matchingAnswers,
+      nonMatchingAnswers,
       sessionId: session.id
     };
   },
