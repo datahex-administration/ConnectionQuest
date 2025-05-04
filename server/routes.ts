@@ -1,7 +1,16 @@
-import express, { type Express } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import { z } from "zod";
+
+// Declare session with custom properties
+declare module "express-session" {
+  interface SessionData {
+    userId?: number;
+    isAdmin?: boolean;
+    adminUser?: { username: string };
+  }
+}
 import { storage } from "./storage";
 import { validateAdminLogin, requireAdmin, adminLogout, AuthRequest } from "./auth";
 import { gameService } from "./game-service";
@@ -10,6 +19,14 @@ import {
   adminLoginSchema,
 } from "@shared/schema";
 import { db } from "@db";
+
+// Middleware to check if user is authenticated
+function requireUser(req: Request, res: Response, next: NextFunction) {
+  if (req.session?.userId) {
+    return next();
+  }
+  return res.status(401).json({ error: "User not logged in" });
+}
 
 // Session configuration
 const SESSION_SECRET = process.env.SESSION_SECRET || "mawadha-compatibility-game-secret";
@@ -29,6 +46,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // API Routes
+  // User endpoints
+  app.get("/api/user", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: "User not logged in" });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        // Clear invalid session
+        req.session.destroy(() => {});
+        return res.status(401).json({ error: "User not found" });
+      }
+      
+      return res.status(200).json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return res.status(500).json({ error: "Failed to fetch user data" });
+    }
+  });
+  
+  app.post("/api/logout", (req, res) => {
+    req.session?.destroy((err) => {
+      if (err) {
+        console.error("Session destruction error:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      
+      res.clearCookie("connect.sid");
+      return res.status(200).json({ success: true });
+    });
+  });
+
   // User Registration
   app.post("/api/users", async (req, res) => {
     try {
