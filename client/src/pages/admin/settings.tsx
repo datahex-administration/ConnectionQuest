@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, ArrowLeft } from "lucide-react";
 import { getLogoUrl } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -167,9 +168,21 @@ export default function SettingsPage() {
     );
   }
 
+  const [, navigate] = useLocation();
+  
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Site Settings</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Site Settings</h1>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/admin/dashboard')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
-import { Pencil, Plus, Trash2, X, Check, RefreshCw, Loader2, Search, Download } from "lucide-react";
+import { Pencil, Plus, Trash2, X, Check, RefreshCw, Loader2, Search, Download, ArrowLeft } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ interface CouponTemplateAPIResponse {
 }
 
 export default function AdminCouponTemplates() {
+  const [, navigate] = useLocation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CouponTemplate | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -254,12 +256,23 @@ export default function AdminCouponTemplates() {
       <div className="my-8">
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <CardTitle>Coupon Templates</CardTitle>
+                <div className="flex items-center gap-3 mb-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/admin/dashboard')}
+                    className="flex items-center gap-1"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                  </Button>
+                  <CardTitle>Coupon Templates</CardTitle>
+                </div>
                 <CardDescription>Manage coupon templates used for match rewards</CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-auto">
                 <Button
                   variant="outline"
                   size="sm"
