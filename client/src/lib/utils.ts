@@ -22,6 +22,9 @@ export function getLogoUrl(url: string | null | undefined): string {
     return url;
   }
   
-  // Otherwise, it's a relative URL, prepend with origin
-  return `${window.location.origin}${url}`;
+  // Make sure the URL starts with a slash
+  const formattedUrl = url.startsWith('/') ? url : `/${url}`;
+  
+  // Create the full URL with current origin
+  return `${window.location.origin}${formattedUrl}`;
 }
