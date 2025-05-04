@@ -89,6 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Logged out",
         description: "You have been logged out",
       });
+      // Force a full page refresh to clear all state
+      window.location.href = "/";
     },
     onError: (error: Error) => {
       toast({

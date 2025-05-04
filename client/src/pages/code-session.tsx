@@ -18,7 +18,7 @@ export default function CodeSession() {
   const [partnerJoined, setPartnerJoined] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logoutMutation } = useAuth();
 
   // Poll for partner status if we have a session code
   useEffect(() => {
@@ -162,9 +162,26 @@ export default function CodeSession() {
     );
   }
   
+  // Testing function to logout
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
   return (
     <div className="animate-fade-in">
       <Header />
+      
+      {/* Temporary logout button for testing */}
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline"
+          size="sm"
+          onClick={handleLogout}
+          className="text-gray-500"
+        >
+          Log Out (Test)
+        </Button>
+      </div>
       
       <div className="max-w-md mx-auto">
         <Card>
