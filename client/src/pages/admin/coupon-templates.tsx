@@ -488,7 +488,7 @@ export default function AdminCouponTemplates() {
                             <RadioGroupItem value="fixed" />
                           </FormControl>
                           <FormLabel className="font-normal">
-                            Fixed Amount (e.g. $15)
+                            Fixed Amount (e.g. AED 15)
                           </FormLabel>
                         </FormItem>
                       </RadioGroup>
