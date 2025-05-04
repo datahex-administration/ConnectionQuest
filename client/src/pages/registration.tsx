@@ -36,9 +36,9 @@ export default function Registration() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      gender: undefined as any,
-      age: undefined as any,
-      whatsappNumber: "",
+      gender: "male", // Default to male selection
+      age: 18, // Default to minimum age
+      whatsappNumber: "+971", // Default to UAE code
     },
   });
 
@@ -146,9 +146,9 @@ export default function Registration() {
                         <div className="flex items-center space-x-2">
                           <Select 
                             onValueChange={(value) => {
-                              // Extract just the number part if there's an existing value
-                              const currentNumber = field.value.replace(/^\+\d+\s*/, '');
-                              field.onChange(`${value}${currentNumber}`);
+                              // Keep the number part if it exists
+                              const numberPart = field.value.replace(/^\+\d+/, '');
+                              field.onChange(`${value}${numberPart}`);
                             }}
                             defaultValue="+971">
                             <SelectTrigger className="w-[110px] flex-shrink-0">
@@ -167,13 +167,16 @@ export default function Registration() {
                             </SelectContent>
                           </Select>
                           <Input 
+                            type="tel"
                             placeholder="5X XXX XXXX" 
-                            value={field.value.replace(/^\+\d+\s*/, '')} 
+                            value={field.value.replace(/^\+\d+/, '')}
                             onChange={(e) => {
-                              // Extract country code from current value
-                              const countryCode = field.value.match(/^\+\d+/);
-                              const prefix = countryCode ? countryCode[0] : '+971';
-                              field.onChange(`${prefix}${e.target.value}`);
+                              // Get the country code prefix from the current value
+                              const countryCodeMatch = field.value.match(/^\+\d+/);
+                              const countryCode = countryCodeMatch ? countryCodeMatch[0] : '+971';
+                              // Only allow numbers
+                              const numbers = e.target.value.replace(/\D/g, '');
+                              field.onChange(`${countryCode}${numbers}`);
                             }}
                           />
                         </div>

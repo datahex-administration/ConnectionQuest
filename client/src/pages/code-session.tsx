@@ -62,13 +62,19 @@ export default function CodeSession() {
     setIsGenerating(true);
     
     try {
-      const response = await apiRequest("POST", "/api/sessions/create", {});
+      // Make sure to include the user ID in the request
+      const response = await apiRequest("POST", "/api/sessions/create", { userId: user.id });
       const data = await response.json();
-      setSessionCode(data.sessionCode);
-      toast({
-        title: "Code Generated",
-        description: "Share this code with your partner to start the game.",
-      });
+      
+      if (data.sessionCode) {
+        setSessionCode(data.sessionCode);
+        toast({
+          title: "Code Generated",
+          description: "Share this code with your partner to start the game.",
+        });
+      } else {
+        throw new Error("Failed to generate session code");
+      }
     } catch (error) {
       console.error("Error generating code:", error);
       toast({
@@ -104,15 +110,22 @@ export default function CodeSession() {
     setIsJoining(true);
     
     try {
-      const response = await apiRequest("POST", "/api/sessions/join", { sessionCode: partnerCode });
-      await response.json();
-      
-      setSessionCode(partnerCode);
-      setPartnerJoined(true);
-      toast({
-        title: "Session Joined",
-        description: "You've successfully joined your partner's session.",
+      const response = await apiRequest("POST", "/api/sessions/join", { 
+        sessionCode: partnerCode,
+        userId: user.id 
       });
+      const result = await response.json();
+      
+      if (result.success || result.sessionCode) {
+        setSessionCode(partnerCode);
+        setPartnerJoined(true);
+        toast({
+          title: "Session Joined",
+          description: "You've successfully joined your partner's session.",
+        });
+      } else {
+        throw new Error(result.message || "Could not join the session");
+      }
     } catch (error) {
       console.error("Error joining session:", error);
       toast({
@@ -200,7 +213,12 @@ export default function CodeSession() {
                     className="bg-accent hover:bg-accent/80 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all mx-auto"
                     disabled={isJoining || !partnerCode.trim()}
                   >
-                    {isJoining ? "Joining..." : "Join Partner"}
+                    {isJoining ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Joining...
+                      </>
+                    ) : "Join Partner"}
                   </Button>
                 </div>
               </div>
