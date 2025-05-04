@@ -62,8 +62,8 @@ export default function CodeSession() {
     setIsGenerating(true);
     
     try {
-      // Make sure to include the user ID in the request
-      const response = await apiRequest("POST", "/api/sessions/create", { userId: user.id });
+      // Don't need to send userId, it's handled by session in the backend
+      const response = await apiRequest("POST", "/api/sessions/create", {});
       const data = await response.json();
       
       if (data.sessionCode) {
@@ -111,8 +111,8 @@ export default function CodeSession() {
     
     try {
       const response = await apiRequest("POST", "/api/sessions/join", { 
-        sessionCode: partnerCode,
-        userId: user.id 
+        sessionCode: partnerCode
+        // Don't need to send userId, it's handled by session in the backend
       });
       const result = await response.json();
       

@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
-      const res = await apiRequest("POST", "/api/sessions/join", data);
+      const res = await apiRequest("POST", "/api/sessions/join", { sessionCode: data.sessionCode });
       return await res.json();
     },
     onSuccess: () => {
