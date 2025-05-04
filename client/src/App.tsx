@@ -18,6 +18,7 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import AdminQuestions from "@/pages/admin/questions";
 import AdminParticipants from "@/pages/admin/participants";
 import AdminSettings from "@/pages/admin/settings";
+import AdminCouponTemplates from "@/pages/admin/coupon-templates";
 
 function Router() {
   return (
@@ -42,6 +43,9 @@ function Router() {
       </Route>
       <Route path="/admin/settings">
         {() => <AdminRoute component={AdminSettings} />}
+      </Route>
+      <Route path="/admin/coupon-templates">
+        {() => <AdminRoute component={AdminCouponTemplates} />}
       </Route>
       
       <Route component={NotFound} />

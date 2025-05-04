@@ -1,0 +1,627 @@
+import { useEffect, useState } from "react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
+import { Pencil, Plus, Trash2, X, Check, RefreshCw, Loader2, Search, Download } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
+import { z } from "zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CouponTemplate } from "@shared/schema";
+import debounce from "lodash.debounce";
+
+// Form validation schema
+const couponFormSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 characters" }),
+  discountType: z.enum(["percentage", "fixed"]),
+  discountValue: z.string().refine(val => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0;
+  }, { message: "Discount value must be a positive number" }),
+  validityDays: z.coerce.number().int().positive(),
+  matchPercentageThreshold: z.coerce.number().int().min(0).max(100),
+  isActive: z.boolean().default(true)
+});
+
+type CouponFormValues = z.infer<typeof couponFormSchema>;
+
+interface CouponTemplateAPIResponse {
+  templates: CouponTemplate[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+  };
+}
+
+export default function AdminCouponTemplates() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<CouponTemplate | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const limit = 10;
+  
+  const { toast } = useToast();
+
+  // Initialize the form
+  const form = useForm<CouponFormValues>({
+    resolver: zodResolver(couponFormSchema),
+    defaultValues: {
+      name: "",
+      discountType: "percentage",
+      discountValue: "",
+      validityDays: 30,
+      matchPercentageThreshold: 40,
+      isActive: true
+    }
+  });
+
+  // Debounced search handler
+  useEffect(() => {
+    const debouncedFunction = debounce(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setPage(1); // Reset to first page on search
+    }, 300);
+
+    debouncedFunction();
+    return () => debouncedFunction.cancel();
+  }, [searchQuery]);
+
+  // Fetch coupon templates
+  const {
+    data: couponData,
+    isLoading: templatesLoading,
+    isError: templatesError,
+    refetch: refetchTemplates
+  } = useQuery<CouponTemplateAPIResponse>({
+    queryKey: ["/api/admin/coupon-templates", page, debouncedSearchQuery],
+    queryFn: getQueryFn(),
+  });
+
+  // Create coupon template mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: CouponFormValues) => {
+      const response = await apiRequest("POST", "/api/admin/coupon-templates", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/coupon-templates"] });
+      toast({
+        title: "Success",
+        description: "Coupon template created successfully",
+      });
+      setIsFormOpen(false);
+      resetForm();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create coupon template: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update coupon template mutation
+  const updateMutation = useMutation({
+    mutationFn: async (data: CouponFormValues & { id: number }) => {
+      const { id, ...templateData } = data;
+      const response = await apiRequest("PUT", `/api/admin/coupon-templates/${id}`, templateData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/coupon-templates"] });
+      toast({
+        title: "Success",
+        description: "Coupon template updated successfully",
+      });
+      setIsFormOpen(false);
+      resetForm();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update coupon template: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete coupon template mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/admin/coupon-templates/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to delete template");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/coupon-templates"] });
+      toast({
+        title: "Success",
+        description: "Coupon template deleted successfully",
+      });
+      setDeleteDialogOpen(false);
+      setTemplateToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete coupon template: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle coupon template status mutation
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number, isActive: boolean }) => {
+      const response = await apiRequest("PATCH", `/api/admin/coupon-templates/${id}/status`, { isActive });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/coupon-templates"] });
+      toast({
+        title: "Success",
+        description: "Coupon template status updated",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update status: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle form submission
+  const onSubmit = (data: CouponFormValues) => {
+    if (editingTemplate) {
+      updateMutation.mutate({ ...data, id: editingTemplate.id });
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  // Reset form and editing state
+  const resetForm = () => {
+    form.reset({
+      name: "",
+      discountType: "percentage",
+      discountValue: "",
+      validityDays: 30,
+      matchPercentageThreshold: 40,
+      isActive: true
+    });
+    setEditingTemplate(null);
+  };
+
+  // Handle edit button click
+  const handleEdit = (template: CouponTemplate) => {
+    setEditingTemplate(template);
+    form.reset({
+      name: template.name,
+      discountType: template.discountType as "percentage" | "fixed",
+      discountValue: template.discountValue,
+      validityDays: template.validityDays,
+      matchPercentageThreshold: template.matchPercentageThreshold,
+      isActive: template.isActive
+    });
+    setIsFormOpen(true);
+  };
+
+  // Handle delete button click
+  const handleDelete = (id: number) => {
+    setTemplateToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handle toggle status
+  const handleToggleStatus = (id: number, currentStatus: boolean) => {
+    toggleStatusMutation.mutate({ id, isActive: !currentStatus });
+  };
+
+  // Format discount value for display
+  const formatDiscount = (type: string, value: string) => {
+    if (type === "percentage") {
+      return `${value}%`;
+    } else {
+      return `$${value}`;
+    }
+  };
+
+  return (
+    <div className="container mx-auto">
+      <Header />
+      
+      <div className="my-8">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Coupon Templates</CardTitle>
+                <CardDescription>Manage coupon templates used for match rewards</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetchTemplates()}
+                  disabled={templatesLoading}
+                >
+                  {templatesLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">Refresh</span>
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => {
+                    resetForm();
+                    setIsFormOpen(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Template
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between mb-4">
+              <div className="relative w-72">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search templates..."
+                  className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Template listing table */}
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Discount</TableHead>
+                    <TableHead>Validity</TableHead>
+                    <TableHead>Threshold</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {templatesLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                        <p className="mt-2 text-sm text-muted-foreground">Loading coupon templates...</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : templatesError ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-red-500">
+                        <p>Failed to load coupon templates. Please try again.</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : couponData?.templates.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <p className="text-muted-foreground">No coupon templates found.</p>
+                        {debouncedSearchQuery && (
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Try a different search term or 
+                            <Button 
+                              variant="link" 
+                              className="px-1 py-0 h-auto" 
+                              onClick={() => setSearchQuery("")}
+                            >
+                              clear search
+                            </Button>
+                          </p>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    couponData?.templates.map((template) => (
+                      <TableRow key={template.id}>
+                        <TableCell className="font-medium">{template.name}</TableCell>
+                        <TableCell>
+                          {formatDiscount(template.discountType, template.discountValue)}
+                        </TableCell>
+                        <TableCell>{template.validityDays} days</TableCell>
+                        <TableCell>{template.matchPercentageThreshold}%</TableCell>
+                        <TableCell>
+                          {template.isActive ? (
+                            <Badge variant="success">Active</Badge>
+                          ) : (
+                            <Badge variant="secondary">Inactive</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleStatus(template.id, template.isActive)}
+                              title={template.isActive ? "Deactivate" : "Activate"}
+                              disabled={toggleStatusMutation.isPending}
+                            >
+                              {template.isActive ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(template)}
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(template.id)}
+                              title="Delete"
+                              className="text-red-500 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Pagination */}
+            {!templatesLoading && !templatesError && couponData?.templates.length > 0 && (
+              <div className="flex justify-between items-center mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, couponData.pagination.totalItems)} of {couponData.pagination.totalItems} templates
+                </p>
+                <Pagination
+                  currentPage={page}
+                  totalPages={couponData.pagination.totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Coupon Template Form Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{editingTemplate ? "Edit Coupon Template" : "Create Coupon Template"}</DialogTitle>
+            <DialogDescription>
+              {editingTemplate 
+                ? "Update the coupon template details below."
+                : "Fill in the details to create a new coupon template."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Template Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter template name" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      A descriptive name for this coupon template.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="discountType"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Discount Type</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="percentage" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            Percentage (e.g. 10%)
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="fixed" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            Fixed Amount (e.g. $15)
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="discountValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount Value</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5">
+                          {form.watch("discountType") === "percentage" ? "%" : "$"}
+                        </span>
+                        <Input placeholder="Enter value" className="pl-8" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      {form.watch("discountType") === "percentage" 
+                        ? "Enter percentage value (e.g. 10 for 10%)" 
+                        : "Enter fixed amount (e.g. 15 for $15)"}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="validityDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Validity Period (days)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Number of days the coupon will be valid after being issued.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="matchPercentageThreshold"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Match Percentage Threshold</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input type="number" min="0" max="100" {...field} />
+                        <span className="absolute right-3 top-2.5">%</span>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Minimum match percentage required to get this coupon (0-100).
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Active Status
+                      </FormLabel>
+                      <FormDescription>
+                        Only active templates can be assigned to users.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    resetForm();
+                    setIsFormOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  {(createMutation.isPending || updateMutation.isPending) && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {editingTemplate ? "Update" : "Create"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this coupon template? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => templateToDelete && deleteMutation.mutate(templateToDelete)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Footer showAdminLink={true} />
+    </div>
+  );
+}
