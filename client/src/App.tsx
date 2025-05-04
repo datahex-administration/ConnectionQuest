@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { AdminRoute } from "@/lib/admin-route";
 
 import NotFound from "@/pages/not-found";
 import Welcome from "@/pages/welcome";
@@ -13,6 +14,7 @@ import Game from "@/pages/game";
 import Results from "@/pages/results";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
+import AdminQuestions from "@/pages/admin/questions";
 
 function Router() {
   return (
@@ -26,7 +28,12 @@ function Router() {
       <ProtectedRoute path="/code-session" component={CodeSession} />
       <ProtectedRoute path="/game/:code" component={Game} />
       <ProtectedRoute path="/results/:code" component={Results} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin/dashboard">
+        {() => <AdminRoute component={AdminDashboard} />}
+      </Route>
+      <Route path="/admin/questions">
+        {() => <AdminRoute component={AdminQuestions} />}
+      </Route>
       
       <Route component={NotFound} />
     </Switch>
