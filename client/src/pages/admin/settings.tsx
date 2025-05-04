@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, Upload } from "lucide-react";
+import { getLogoUrl } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -187,12 +188,13 @@ export default function SettingsPage() {
                   {logoPreview && (
                     <div className="relative w-32 h-32 border rounded overflow-hidden flex items-center justify-center bg-background">
                       <img 
-                        src={logoPreview?.startsWith("data:") ? logoPreview : `${window.location.origin}${logoPreview}`} 
+                        src={logoPreview?.startsWith("data:") ? logoPreview : getLogoUrl(logoPreview)} 
                         alt="Logo preview" 
                         className="max-w-full max-h-full object-contain" 
                         onError={(e) => {
                           // Log error and set a fallback image
                           console.error('Error loading logo preview:', logoPreview);
+                          e.currentTarget.src = '/placeholder-image.png';
                         }}
                       />
                     </div>
