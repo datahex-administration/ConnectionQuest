@@ -216,21 +216,19 @@ export const storage = {
   },
 
   async getUsersByAgeGroups(): Promise<{ ageGroup: string; count: number }[]> {
-    const result = await db
-      .select({
-        ageGroup: sql<string>`
-          CASE
-            WHEN ${users.age} BETWEEN 18 AND 24 THEN '18-24'
-            WHEN ${users.age} BETWEEN 25 AND 34 THEN '25-34'
-            WHEN ${users.age} BETWEEN 35 AND 44 THEN '35-44'
-            ELSE '45+'
-          END
-        `,
-        count: count()
-      })
-      .from(users)
-      .groupBy(sql`ageGroup`)
-      .orderBy(sql`ageGroup`);
+    const result = await db.execute(sql`
+      SELECT
+        CASE
+          WHEN age BETWEEN 18 AND 24 THEN '18-24'
+          WHEN age BETWEEN 25 AND 34 THEN '25-34'
+          WHEN age BETWEEN 35 AND 44 THEN '35-44'
+          ELSE '45+'
+        END AS "ageGroup",
+        COUNT(*) AS count
+      FROM users
+      GROUP BY "ageGroup"
+      ORDER BY "ageGroup"
+    `);
     return result;
   },
 
