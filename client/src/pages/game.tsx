@@ -15,7 +15,7 @@ export default function Game() {
   const sessionCode = params.code;
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { userId } = useGameSession();
+  const { userId, checkUserSessionStatus } = useGameSession();
   
   const [isLoading, setIsLoading] = useState(true);
   const [commonQuestions, setCommonQuestions] = useState<GameQuestion[]>([]);
@@ -24,6 +24,7 @@ export default function Game() {
   const [answers, setAnswers] = useState<Map<number, { optionId: number, answer: string }>>(new Map());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isCheckingSubmissionStatus, setIsCheckingSubmissionStatus] = useState(true);
 
   // Combined questions array for navigation
   const allQuestions = [...commonQuestions, ...individualQuestions];
@@ -52,6 +53,43 @@ export default function Game() {
     
     loadQuestions();
   }, [sessionCode, userId, toast]);
+  
+  // Check if the user has already submitted answers for this session
+  useEffect(() => {
+    async function checkSubmissionStatus() {
+      if (!sessionCode || !userId) return;
+      
+      try {
+        setIsCheckingSubmissionStatus(true);
+        const hasAlreadySubmitted = await checkUserSessionStatus(sessionCode);
+        
+        if (hasAlreadySubmitted) {
+          // If user has already submitted, set hasSubmitted to true and check if results are ready
+          setHasSubmitted(true);
+          
+          // Check if both users have submitted and results are ready
+          const response = await fetch(`/api/sessions/${sessionCode}/results-status`);
+          const data = await response.json();
+          
+          if (data.ready) {
+            // If results are ready, navigate to results page
+            toast({
+              title: "Results Ready",
+              description: "You've already submitted answers for this session. Redirecting to results.",
+            });
+            navigate(`/results/${sessionCode}`);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking submission status:", error);
+        // If there's an error checking status, continue with the game
+      } finally {
+        setIsCheckingSubmissionStatus(false);
+      }
+    }
+    
+    checkSubmissionStatus();
+  }, [sessionCode, userId, navigate, toast, checkUserSessionStatus]);
   
   const handleAnswerSelect = (questionId: number, optionIndex: number, answerText: string) => {
     // Create a copy of the answers map and update it
@@ -144,7 +182,7 @@ export default function Game() {
     }
   };
   
-  if (isLoading) {
+  if (isLoading || isCheckingSubmissionStatus) {
     return (
       <div className="animate-fade-in">
         <Header />
@@ -154,7 +192,9 @@ export default function Game() {
             <div className="h-24 bg-primary/10 rounded mb-4"></div>
             <div className="h-12 bg-primary/20 rounded w-1/2 mx-auto"></div>
           </div>
-          <p className="mt-6 text-gray-600">Loading questions...</p>
+          <p className="mt-6 text-gray-600">
+            {isCheckingSubmissionStatus ? "Checking submission status..." : "Loading questions..."}
+          </p>
         </div>
         <Footer />
       </div>
