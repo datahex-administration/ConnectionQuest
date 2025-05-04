@@ -64,6 +64,12 @@
   .btn-primary:hover {
     @apply transform -translate-y-0.5;
   }
+  .btn-maroon {
+    @apply bg-[#800000] hover:bg-[#600000] text-white transition-all duration-300;
+  }
+  .btn-maroon:hover {
+    @apply transform -translate-y-0.5;
+  }
   .session-code {
     @apply tracking-widest text-3xl font-bold;
   }

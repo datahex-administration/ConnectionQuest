@@ -58,7 +58,7 @@ export default function Welcome() {
               <Link href="/register">
                 <Button 
                   size="lg" 
-                  className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg bg-[#800000] text-white hover:bg-[#600000]"
+                  className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg btn-maroon"
                 >
                   Let's Get Started
                 </Button>
@@ -88,7 +88,7 @@ export default function Welcome() {
         <Link href="/register">
           <Button 
             size="lg" 
-            className="w-full font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow bg-[#800000] text-white hover:bg-[#600000]"
+            className="w-full font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow btn-maroon"
           >
             Start Now!
           </Button>
