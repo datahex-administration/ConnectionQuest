@@ -189,8 +189,21 @@ export const storage = {
   },
 
   // Analytics
-  async getTotalParticipants(): Promise<number> {
-    const result = await db.select({ count: count() }).from(users);
+  async getTotalParticipants(search: string = "", status: string = ""): Promise<number> {
+    // Base query
+    let query = db.select({ count: count() }).from(users);
+    
+    // Apply search filter if provided
+    if (search) {
+      query = query.where(
+        sql`LOWER(${users.name}) LIKE LOWER(${'%' + search + '%'}) OR 
+            LOWER(${users.whatsappNumber}) LIKE LOWER(${'%' + search + '%'})`
+      );
+    }
+    
+    // Note: Status filtering is handled in memory after fetching users 
+    // because status is calculated from multiple tables
+    const result = await query;
     return result[0].count;
   },
 
@@ -365,11 +378,19 @@ export const storage = {
     return updatedSettings;
   },
 
-  async getRecentParticipants(limit: number = 10, offset: number = 0): Promise<(User & { matchStatus: string; sessionCode?: string; voucherCode?: string })[]> {
+  async getRecentParticipants(limit: number = 10, offset: number = 0, search: string = "", statusFilter: string = ""): Promise<(User & { matchStatus: string; sessionCode?: string; voucherCode?: string })[]> {
+    // Build the query with search if provided
+    let where = undefined;
+    if (search) {
+      where = sql`LOWER(${users.name}) LIKE LOWER(${'%' + search + '%'}) OR 
+               LOWER(${users.whatsappNumber}) LIKE LOWER(${'%' + search + '%'})`;
+    }
+    
     const recentUsers = await db.query.users.findMany({
       orderBy: [desc(users.createdAt)],
       limit,
-      offset
+      offset,
+      where
     });
 
     // For each user, determine their match status
@@ -448,6 +469,11 @@ export const storage = {
       })
     );
 
+    // Apply status filter if provided
+    if (statusFilter && statusFilter !== "all") {
+      return usersWithStatus.filter(user => user.matchStatus === statusFilter);
+    }
+    
     return usersWithStatus;
   }
 };
