@@ -23,6 +23,7 @@ export default function Game() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Map<number, { optionId: number, answer: string }>>(new Map());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   // Combined questions array for navigation
   const allQuestions = [...commonQuestions, ...individualQuestions];
@@ -74,6 +75,35 @@ export default function Game() {
     }
   };
   
+  // Poll for partner's submission status
+  useEffect(() => {
+    if (!hasSubmitted || !sessionCode) return;
+    
+    const checkResultsReady = async () => {
+      try {
+        // Check if results are ready (meaning both partners have submitted)
+        const response = await fetch(`/api/sessions/${sessionCode}/results-status`);
+        const data = await response.json();
+        
+        if (data.ready) {
+          // If ready, navigate to results page
+          navigate(`/results/${sessionCode}`);
+        }
+      } catch (error) {
+        console.error("Error checking results status:", error);
+      }
+    };
+    
+    // Initial check
+    checkResultsReady();
+    
+    // Set up polling interval (every 3 seconds)
+    const intervalId = setInterval(checkResultsReady, 3000);
+    
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, [hasSubmitted, sessionCode, navigate]);
+
   const handleSubmit = async () => {
     if (answers.size < allQuestions.length) {
       toast({
@@ -94,11 +124,14 @@ export default function Game() {
     
     try {
       await submitAnswers(sessionCode, answerArray);
+      
       toast({
         title: "Answers Submitted",
         description: "Your answers have been submitted successfully.",
       });
-      navigate(`/results/${sessionCode}`);
+      
+      // Set hasSubmitted to true to start polling for partner's submission
+      setHasSubmitted(true);
     } catch (error) {
       console.error("Error submitting answers:", error);
       toast({
@@ -135,66 +168,81 @@ export default function Game() {
       <div className="max-w-md mx-auto">
         <Card>
           <CardContent className="pt-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-primary">Compatibility Quiz</h2>
-              <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm">
-                Question <span id="current-question">{currentQuestionIndex + 1}</span>/<span id="total-questions">{allQuestions.length}</span>
+            {hasSubmitted ? (
+              <div className="text-center py-8">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-primary/10 p-3 mb-4">
+                    <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
+                  </div>
+                </div>
+                <h2 className="text-xl font-semibold text-primary mb-2">Answers Submitted!</h2>
+                <p className="text-gray-600 mb-6">Waiting for your partner to complete the questionnaire...</p>
+                <p className="text-sm text-gray-500">You'll automatically be redirected to see your results once your partner submits their answers.</p>
               </div>
-            </div>
-            
-            {currentQuestion && (
-              <div className="animate-slide-up">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">{currentQuestion.text}</h3>
+            ) : (
+              <>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-primary">Compatibility Quiz</h2>
+                  <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm">
+                    Question <span id="current-question">{currentQuestionIndex + 1}</span>/<span id="total-questions">{allQuestions.length}</span>
+                  </div>
+                </div>
                 
-                <RadioGroup 
-                  value={answers.get(currentQuestion.id)?.answer || ""}
-                  className="space-y-3"
-                  onValueChange={(value) => {
-                    const optionIndex = currentQuestion.options.findIndex(opt => opt === value);
-                    handleAnswerSelect(currentQuestion.id, optionIndex, value);
-                  }}
-                >
-                  {currentQuestion.options.map((option, i) => (
-                    <div key={i} className="option-container">
-                      <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-primary/5 transition-all">
-                        <RadioGroupItem value={option} id={`q${currentQuestion.id}-option${i+1}`} />
-                        <Label htmlFor={`q${currentQuestion.id}-option${i+1}`} className="flex-1 cursor-pointer">
-                          <span className="text-gray-700">{option}</span>
-                        </Label>
-                      </div>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
+                {currentQuestion && (
+                  <div className="animate-slide-up">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">{currentQuestion.text}</h3>
+                    
+                    <RadioGroup 
+                      value={answers.get(currentQuestion.id)?.answer || ""}
+                      className="space-y-3"
+                      onValueChange={(value) => {
+                        const optionIndex = currentQuestion.options.findIndex(opt => opt === value);
+                        handleAnswerSelect(currentQuestion.id, optionIndex, value);
+                      }}
+                    >
+                      {currentQuestion.options.map((option, i) => (
+                        <div key={i} className="option-container">
+                          <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-primary/5 transition-all">
+                            <RadioGroupItem value={option} id={`q${currentQuestion.id}-option${i+1}`} />
+                            <Label htmlFor={`q${currentQuestion.id}-option${i+1}`} className="flex-1 cursor-pointer">
+                              <span className="text-gray-700">{option}</span>
+                            </Label>
+                          </div>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                )}
+                
+                <div className="flex justify-between mt-8">
+                  <Button 
+                    onClick={goToPreviousQuestion}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg"
+                    disabled={currentQuestionIndex === 0}
+                  >
+                    Previous
+                  </Button>
+                  
+                  {currentQuestionIndex < allQuestions.length - 1 ? (
+                    <Button 
+                      onClick={goToNextQuestion}
+                      className="btn-primary text-white font-medium py-2 px-4 rounded-lg"
+                      disabled={!answers.has(currentQuestion?.id)}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleSubmit}
+                      className="btn-primary text-white font-medium py-2 px-4 rounded-lg"
+                      disabled={isSubmitting || !answers.has(currentQuestion?.id)}
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Answers"}
+                    </Button>
+                  )}
+                </div>
+              </>
             )}
-            
-            <div className="flex justify-between mt-8">
-              <Button 
-                onClick={goToPreviousQuestion}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg"
-                disabled={currentQuestionIndex === 0}
-              >
-                Previous
-              </Button>
-              
-              {currentQuestionIndex < allQuestions.length - 1 ? (
-                <Button 
-                  onClick={goToNextQuestion}
-                  className="btn-primary text-white font-medium py-2 px-4 rounded-lg"
-                  disabled={!answers.has(currentQuestion?.id)}
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleSubmit}
-                  className="btn-primary text-white font-medium py-2 px-4 rounded-lg"
-                  disabled={isSubmitting || !answers.has(currentQuestion?.id)}
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Answers"}
-                </Button>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>

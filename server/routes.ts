@@ -308,6 +308,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/sessions/:code/results-status", async (req, res) => {
+    try {
+      const userId = getUserIdFromRequest(req);
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not logged in" });
+      }
+
+      const { code } = req.params;
+      // Get session to check if both users have submitted answers
+      const gameSession = await storage.getGameSessionByCode(code);
+      
+      if (!gameSession) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      // Get participants in this session
+      const participants = await storage.getSessionParticipants(gameSession.id);
+      if (participants.length < 2) {
+        return res.status(200).json({ ready: false, message: "Waiting for partner to join" });
+      }
+      
+      // Check if both participants have submitted their answers
+      const allAnswersSubmitted = await storage.areAllAnswersSubmitted(gameSession.id);
+      
+      return res.status(200).json({ ready: allAnswersSubmitted });
+    } catch (error) {
+      console.error("Error checking results status:", error);
+      return res.status(500).json({ error: "Failed to check results status" });
+    }
+  });
+
   app.get("/api/sessions/:code/results", async (req, res) => {
     try {
       const userId = getUserIdFromRequest(req);

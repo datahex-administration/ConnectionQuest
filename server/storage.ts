@@ -124,6 +124,37 @@ export const storage = {
     });
   },
 
+  async areAllAnswersSubmitted(sessionId: number): Promise<boolean> {
+    // 1. Get all participants in this session
+    const participants = await this.getSessionParticipants(sessionId);
+    if (participants.length < 2) return false;
+    
+    // 2. Get all questions
+    const questions = await this.getQuestions();
+    if (!questions.length) return false;
+    
+    // 3. Get all answers for this session grouped by user
+    const answersResult = await db
+      .select({ userId: userAnswers.userId, answerCount: count() })
+      .from(userAnswers)
+      .where(eq(userAnswers.sessionId, sessionId))
+      .groupBy(userAnswers.userId);
+
+    // 4. Check if each participant has submitted all answers
+    if (answersResult.length < participants.length) {
+      return false; // Not all participants have submitted answers
+    }
+
+    // Check if each participant has submitted the correct number of answers
+    for (const result of answersResult) {
+      if (result.answerCount < questions.length) {
+        return false; // This participant hasn't answered all questions
+      }
+    }
+    
+    return true;
+  },
+
   // Voucher operations
   async createVoucher(voucherData: Omit<Voucher, "id" | "createdAt">): Promise<Voucher> {
     const [newVoucher] = await db.insert(vouchers).values(voucherData).returning();
