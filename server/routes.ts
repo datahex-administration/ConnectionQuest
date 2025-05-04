@@ -25,20 +25,37 @@ import { db } from "@db";
 const activeUserSessions = new Map<string, number>();
 
 // Custom auth middleware that checks both session and fallback token
-function requireUser(req: Request, res: Response, next: NextFunction) {
+// Helper function to get userId from session or token
+function getUserIdFromRequest(req: Request): number | undefined {
   // Check session first
   if (req.session?.userId) {
-    return next();
+    return req.session.userId;
   }
   
   // Check for x-user-token header as fallback
   const userToken = req.headers['x-user-token'] as string;
   if (userToken && activeUserSessions.has(userToken)) {
-    // Recreate session
-    if (req.session) {
-      req.session.userId = activeUserSessions.get(userToken);
-      return next();
+    const userId = activeUserSessions.get(userToken);
+    
+    // Recreate session if possible
+    if (req.session && userId) {
+      req.session.userId = userId;
+      // No need to wait for save to complete
+      req.session.save(err => {
+        if (err) console.error("Error saving session in middleware:", err);
+      });
     }
+    
+    return userId;
+  }
+  
+  return undefined;
+}
+
+function requireUser(req: Request, res: Response, next: NextFunction) {
+  const userId = getUserIdFromRequest(req);
+  if (userId) {
+    return next();
   }
   
   return res.status(401).json({ error: "User not logged in" });
@@ -66,21 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User endpoints
   app.get("/api/user", async (req, res) => {
     try {
-      // Check for token in header first
-      const userToken = req.headers['x-user-token'] as string;
-      let userId = req.session?.userId;
-      
-      // If no session but token exists and is valid, use it
-      if (!userId && userToken && activeUserSessions.has(userToken)) {
-        userId = activeUserSessions.get(userToken);
-        // Recreate session if possible
-        if (req.session && userId) {
-          req.session.userId = userId;
-          req.session.save(err => {
-            if (err) console.error("Error saving session from token:", err);
-          });
-        }
-      }
+      const userId = getUserIdFromRequest(req);
       
       if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
@@ -90,7 +93,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         // Clear invalid session and token
         req.session?.destroy(() => {});
+        
+        // Remove token from active sessions if it exists
+        const userToken = req.headers['x-user-token'] as string;
         if (userToken) activeUserSessions.delete(userToken);
+        
         return res.status(401).json({ error: "User not found" });
       }
       
@@ -172,23 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Session create - Session ID:", req.sessionID);
       console.log("Session create - User ID:", req.session?.userId);
       
-      // Check for token auth as fallback
-      const userToken = req.headers['x-user-token'] as string;
-      let userId: number | undefined = req.session?.userId;
-      
-      // If no session but token exists and is valid, use it
-      if (!userId && userToken && activeUserSessions.has(userToken)) {
-        userId = activeUserSessions.get(userToken);
-        console.log("Session create - Using token auth, user ID:", userId);
-        
-        // Recreate session if possible
-        if (req.session && userId) {
-          req.session.userId = userId;
-          req.session.save(err => {
-            if (err) console.error("Error saving session from token:", err);
-          });
-        }
-      }
+      const userId = getUserIdFromRequest(req);
       
       if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
@@ -208,23 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/sessions/join", async (req, res) => {
     try {
-      // Check for token auth as fallback
-      const userToken = req.headers['x-user-token'] as string;
-      let userId: number | undefined = req.session?.userId;
-      
-      // If no session but token exists and is valid, use it
-      if (!userId && userToken && activeUserSessions.has(userToken)) {
-        userId = activeUserSessions.get(userToken);
-        console.log("Session join - Using token auth, user ID:", userId);
-        
-        // Recreate session if possible
-        if (req.session && userId) {
-          req.session.userId = userId;
-          req.session.save(err => {
-            if (err) console.error("Error saving session from token:", err);
-          });
-        }
-      }
+      const userId = getUserIdFromRequest(req);
       
       if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
@@ -290,7 +265,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/sessions/:code/answers", async (req, res) => {
     try {
-      if (!req.session?.userId) {
+      // Check for token auth as fallback
+      const userToken = req.headers['x-user-token'] as string;
+      let userId: number | undefined = req.session?.userId;
+      
+      // If no session but token exists and is valid, use it
+      if (!userId && userToken && activeUserSessions.has(userToken)) {
+        userId = activeUserSessions.get(userToken);
+        // Recreate session if possible
+        if (req.session && userId) {
+          req.session.userId = userId;
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
       }
 
@@ -301,7 +289,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid answers format" });
       }
       
-      await gameService.submitAnswers(code, req.session.userId, answers);
+      // TypeScript needs reassurance that userId exists after our earlier check
+      await gameService.submitAnswers(code, userId as number, answers);
       
       return res.status(200).json({ success: true });
     } catch (error) {
@@ -312,7 +301,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sessions/:code/results", async (req, res) => {
     try {
-      if (!req.session?.userId) {
+      // Check for token auth as fallback
+      const userToken = req.headers['x-user-token'] as string;
+      let userId: number | undefined = req.session?.userId;
+      
+      // If no session but token exists and is valid, use it
+      if (!userId && userToken && activeUserSessions.has(userToken)) {
+        userId = activeUserSessions.get(userToken);
+        // Recreate session if possible
+        if (req.session && userId) {
+          req.session.userId = userId;
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
       }
 
@@ -341,7 +343,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/vouchers/:id/download", async (req, res) => {
     try {
-      if (!req.session?.userId) {
+      // Check for token auth as fallback
+      const userToken = req.headers['x-user-token'] as string;
+      let userId: number | undefined = req.session?.userId;
+      
+      // If no session but token exists and is valid, use it
+      if (!userId && userToken && activeUserSessions.has(userToken)) {
+        userId = activeUserSessions.get(userToken);
+        // Recreate session if possible
+        if (req.session && userId) {
+          req.session.userId = userId;
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
       }
 
