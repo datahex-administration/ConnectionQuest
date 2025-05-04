@@ -72,6 +72,18 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const couponTemplates = pgTable("coupon_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  discountType: text("discount_type").notNull(), // percentage, fixed
+  discountValue: text("discount_value").notNull(),
+  validityDays: integer("validity_days").notNull(), // Number of days the coupon is valid
+  matchPercentageThreshold: integer("match_percentage_threshold").default(40).notNull(), // Minimum match percentage required
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relationships
 export const gameSessionsRelations = relations(gameSessions, ({ many }) => ({
   participants: many(sessionParticipants),
@@ -146,6 +158,14 @@ export const insertQuestionOptionSchema = createInsertSchema(questionOptions);
 export const insertUserAnswerSchema = createInsertSchema(userAnswers);
 export const insertVoucherSchema = createInsertSchema(vouchers);
 export const insertSettingsSchema = createInsertSchema(settings);
+
+export const insertCouponTemplateSchema = createInsertSchema(couponTemplates, {
+  name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  discountType: (schema) => schema.refine(val => ["percentage", "fixed"].includes(val), "Discount type must be percentage or fixed"),
+  discountValue: (schema) => schema.min(1, "Discount value is required"),
+  validityDays: (schema) => schema.min(1, "Validity days must be at least 1"),
+  matchPercentageThreshold: (schema) => schema.min(0, "Threshold must be at least 0").max(100, "Threshold must be at most 100"),
+});
 export const updateSettingsSchema = z.object({
   privacyPolicyUrl: z.string().url("Must be a valid URL").optional().nullable(),
   termsAndConditionsUrl: z.string().url("Must be a valid URL").optional().nullable(),

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search, Download, ArrowUpDown } from "lucide-react";
 import jsPDF from "jspdf";
@@ -45,13 +45,40 @@ function ParticipantStatusBadge({ status }: { status: string }) {
 function ParticipantsList() {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sessionSearch, setSessionSearch] = useState("");
+  const [sessionInputValue, setSessionInputValue] = useState("");
+  
+  // Initialize input values on component mount
+  useEffect(() => {
+    setSearchInputValue(searchTerm);
+    setSessionInputValue(sessionSearch);
+  }, []);
+  
+  // Refs for search input elements
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const sessionSearchInputRef = useRef<HTMLInputElement>(null);
   
   // References for the tables for PDF export
   const participantsTableRef = useRef<HTMLTableElement>(null);
   const sessionsTableRef = useRef<HTMLTableElement>(null);
   
+  // Debounce search terms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(searchInputValue);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInputValue]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSessionSearch(sessionInputValue);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [sessionInputValue]);
+
   const { data, isLoading } = useQuery({
     queryKey: ["/api/admin/participants", page, searchTerm, statusFilter],
     queryFn: async () => {
@@ -218,8 +245,9 @@ function ParticipantsList() {
               <Input
                 placeholder="Search participant..."
                 className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchInputValue}
+                onChange={(e) => setSearchInputValue(e.target.value)}
+                ref={searchInputRef}
               />
             </div>
             <Select
@@ -315,8 +343,9 @@ function ParticipantsList() {
               <Input
                 placeholder="Search session code..."
                 className="pl-8"
-                value={sessionSearch}
-                onChange={(e) => setSessionSearch(e.target.value)}
+                value={sessionInputValue}
+                onChange={(e) => setSessionInputValue(e.target.value)}
+                ref={sessionSearchInputRef}
               />
             </div>
             <Button
