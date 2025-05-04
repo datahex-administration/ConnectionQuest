@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Heart, Loader2 } from "lucide-react";
 
 export default function CodeSession() {
@@ -26,15 +26,14 @@ export default function CodeSession() {
 
     const checkPartnerStatus = async () => {
       try {
-        const response = await fetch(`/api/sessions/${sessionCode}/status`);
-        if (!response.ok) throw new Error("Failed to check session status");
-        
+        const response = await apiRequest("GET", `/api/sessions/${sessionCode}/status`);
         const data = await response.json();
         if (data.ready) {
           setPartnerJoined(true);
         }
       } catch (error) {
         console.error("Error checking partner status:", error);
+        // Don't show errors to the user for polling operations
       }
     };
 
@@ -110,6 +109,17 @@ export default function CodeSession() {
     setIsJoining(true);
     
     try {
+      // Ensure auth token is available before joining
+      const authToken = localStorage.getItem('mawadha_auth_token');
+      if (!authToken) {
+        // Try to fetch a new token via registration API as a fallback
+        try {
+          await queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+        } catch (e) {
+          console.log("Failed to refresh token, but continuing with join attempt");
+        }
+      }
+      
       const response = await apiRequest("POST", "/api/sessions/join", { 
         sessionCode: partnerCode
         // Don't need to send userId, it's handled by session in the backend
@@ -117,6 +127,9 @@ export default function CodeSession() {
       const result = await response.json();
       
       if (result.success || result.sessionCode) {
+        // Refresh user data to ensure session is up to date
+        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+        
         setSessionCode(partnerCode);
         setPartnerJoined(true);
         toast({
@@ -139,8 +152,22 @@ export default function CodeSession() {
   };
 
   const startGame = () => {
-    if (sessionCode) {
+    // Ensure we have both a session code and a logged-in user before starting
+    if (sessionCode && user) {
+      // Before navigating, ensure authentication is valid
+      const authToken = localStorage.getItem('mawadha_auth_token');
+      if (!authToken) {
+        // Try to refresh authentication
+        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      }
       navigate(`/game/${sessionCode}`);
+    } else if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login again before starting the game.",
+        variant: "destructive",
+      });
+      navigate('/register');
     }
   };
 
