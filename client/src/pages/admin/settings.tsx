@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { updateSettingsSchema } from "@shared/schema";
+import { updateSettingsSchema, Settings } from "@shared/schema";
 
 type SettingsFormValues = z.infer<typeof FormSchema>;
 
@@ -32,7 +32,7 @@ export default function SettingsPage() {
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
 
   // Fetch current settings
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading } = useQuery<Settings>({
     queryKey: ["/api/admin/settings"],
     queryFn: async () => {
       const res = await fetch("/api/admin/settings");

@@ -1,9 +1,10 @@
 import { MawadhaLogo } from "@/components/logo/MawadhaLogo";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
+import { Settings } from "@shared/schema";
 
 export function Header() {
-  const { data: settings } = useQuery({
+  const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });

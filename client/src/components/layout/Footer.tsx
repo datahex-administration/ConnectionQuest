@@ -1,13 +1,14 @@
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
+import { Settings } from "@shared/schema";
 
 interface FooterProps {
   showAdminLink?: boolean;
 }
 
 export function Footer({ showAdminLink = true }: FooterProps) {
-  const { data: settings } = useQuery({
+  const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
