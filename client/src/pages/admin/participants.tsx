@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search, Download, ArrowUpDown } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   Table,
   TableBody,
@@ -12,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdminRoute } from "@/lib/admin-route";
 
 function ParticipantStatusBadge({ status }: { status: string }) {
@@ -40,6 +44,13 @@ function ParticipantStatusBadge({ status }: { status: string }) {
 
 function ParticipantsList() {
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sessionSearch, setSessionSearch] = useState("");
+  
+  // References for the tables for PDF export
+  const participantsTableRef = useRef<HTMLTableElement>(null);
+  const sessionsTableRef = useRef<HTMLTableElement>(null);
   
   const { data, isLoading } = useQuery({
     queryKey: ["/api/admin/participants", page],

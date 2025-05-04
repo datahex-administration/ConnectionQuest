@@ -47,7 +47,7 @@ export function Footer({ showAdminLink = true }: FooterProps) {
       </div>
       <p>© {new Date().getFullYear()} Mawadha. All rights reserved.</p>
       <p className="mt-1 text-xs">
-        Powered by <a href="https://eventhex.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">EventHex</a>
+        Powered by <a href="https://eventhex.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700 font-medium">EventHex</a>
       </p>
     </footer>
   );
