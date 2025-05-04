@@ -12,7 +12,16 @@ export function Header() {
     <header className="flex justify-center mb-6 pt-4">
       <div className="text-center">
         {settings?.logoUrl ? (
-          <img src={settings.logoUrl} alt="Mawadha Logo" className="h-20 mx-auto mb-2 object-contain" />
+          <img 
+            src={`${window.location.origin}${settings.logoUrl}`} 
+            alt="Mawadha Logo" 
+            className="h-20 mx-auto mb-2 object-contain" 
+            onError={(e) => {
+              // Fallback to the default logo if image fails to load
+              e.currentTarget.style.display = 'none';
+              console.error('Error loading logo:', settings.logoUrl);
+            }}
+          />
         ) : (
           <MawadhaLogo className="h-20 mx-auto mb-2" />
         )}

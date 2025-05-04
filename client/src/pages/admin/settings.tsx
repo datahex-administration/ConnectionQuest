@@ -187,9 +187,13 @@ export default function SettingsPage() {
                   {logoPreview && (
                     <div className="relative w-32 h-32 border rounded overflow-hidden flex items-center justify-center bg-background">
                       <img 
-                        src={logoPreview} 
+                        src={logoPreview?.startsWith("data:") ? logoPreview : `${window.location.origin}${logoPreview}`} 
                         alt="Logo preview" 
                         className="max-w-full max-h-full object-contain" 
+                        onError={(e) => {
+                          // Log error and set a fallback image
+                          console.error('Error loading logo preview:', logoPreview);
+                        }}
                       />
                     </div>
                   )}
