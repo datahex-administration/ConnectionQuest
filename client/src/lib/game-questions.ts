@@ -32,19 +32,20 @@ export interface GameSessionResult {
   };
 }
 
+import { apiRequest } from "./queryClient";
+
 // Fetch questions for a game session
 export async function fetchGameQuestions(sessionCode: string): Promise<{
   commonQuestions: GameQuestion[];
   individualQuestions: GameQuestion[];
 }> {
-  const response = await fetch(`/api/sessions/${sessionCode}/questions`);
-  
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || "Failed to fetch questions");
+  try {
+    const response = await apiRequest("GET", `/api/sessions/${sessionCode}/questions`);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching game questions:", error);
+    throw new Error(error instanceof Error ? error.message : "Failed to fetch questions");
   }
-  
-  return response.json();
 }
 
 // Submit user's answers
