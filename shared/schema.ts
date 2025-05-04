@@ -77,6 +77,7 @@ export const couponTemplates = pgTable("coupon_templates", {
   name: text("name").notNull(),
   discountType: text("discount_type").notNull(), // percentage, fixed
   discountValue: text("discount_value").notNull(),
+  currency: text("currency").default("AED").notNull(), // Currency for fixed amount discounts (AED, USD, etc.)
   validityDays: integer("validity_days").notNull(), // Number of days the coupon is valid
   matchPercentageThreshold: integer("match_percentage_threshold").default(40).notNull(), // Minimum match percentage required
   isActive: boolean("is_active").default(true),

@@ -31,6 +31,7 @@ const couponFormSchema = z.object({
     const num = parseFloat(val);
     return !isNaN(num) && num > 0;
   }, { message: "Discount value must be a positive number" }),
+  currency: z.string().min(1, { message: "Currency code is required" }),
   validityDays: z.coerce.number().int().positive(),
   matchPercentageThreshold: z.coerce.number().int().min(0).max(100),
   isActive: z.boolean().default(true)
@@ -67,8 +68,9 @@ export default function AdminCouponTemplates() {
       name: "",
       discountType: "percentage",
       discountValue: "",
+      currency: "AED",
       validityDays: 30,
-      matchPercentageThreshold: 40,
+      matchPercentageThreshold: 50,
       isActive: true
     }
   });
@@ -208,8 +210,9 @@ export default function AdminCouponTemplates() {
       name: "",
       discountType: "percentage",
       discountValue: "",
+      currency: "AED",
       validityDays: 30,
-      matchPercentageThreshold: 40,
+      matchPercentageThreshold: 50,
       isActive: true
     });
     setEditingTemplate(null);
@@ -222,6 +225,7 @@ export default function AdminCouponTemplates() {
       name: template.name,
       discountType: template.discountType as "percentage" | "fixed",
       discountValue: template.discountValue,
+      currency: template.currency || "AED",
       validityDays: template.validityDays,
       matchPercentageThreshold: template.matchPercentageThreshold,
       isActive: Boolean(template.isActive)
@@ -241,11 +245,11 @@ export default function AdminCouponTemplates() {
   };
 
   // Format discount value for display
-  const formatDiscount = (type: string, value: string) => {
+  const formatDiscount = (type: string, value: string, currency?: string) => {
     if (type === "percentage") {
       return `${value}%`;
     } else {
-      return `$${value}`;
+      return `${currency || 'AED'} ${value}`;
     }
   };
 
@@ -362,7 +366,7 @@ export default function AdminCouponTemplates() {
                       <TableRow key={template.id}>
                         <TableCell className="font-medium">{template.name}</TableCell>
                         <TableCell>
-                          {formatDiscount(template.discountType, template.discountValue)}
+                          {formatDiscount(template.discountType, template.discountValue, template.currency)}
                         </TableCell>
                         <TableCell>{template.validityDays} days</TableCell>
                         <TableCell>{template.matchPercentageThreshold}%</TableCell>
@@ -503,7 +507,7 @@ export default function AdminCouponTemplates() {
                     <FormControl>
                       <div className="relative">
                         <span className="absolute left-3 top-2.5">
-                          {form.watch("discountType") === "percentage" ? "%" : "$"}
+                          {form.watch("discountType") === "percentage" ? "%" : ""}
                         </span>
                         <Input placeholder="Enter value" className="pl-8" {...field} />
                       </div>
@@ -511,12 +515,31 @@ export default function AdminCouponTemplates() {
                     <FormDescription>
                       {form.watch("discountType") === "percentage" 
                         ? "Enter percentage value (e.g. 10 for 10%)" 
-                        : "Enter fixed amount (e.g. 15 for $15)"}
+                        : "Enter fixed amount (e.g. 15 for 15 AED)"}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              
+              {form.watch("discountType") === "fixed" && (
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter currency code" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Currency code for fixed discounts (e.g. AED, USD)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               
               <FormField
                 control={form.control}

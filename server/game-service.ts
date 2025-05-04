@@ -223,7 +223,9 @@ export const gameService = {
       if (couponTemplate.discountType === "percentage") {
         discount = `${couponTemplate.discountValue}% OFF`;
       } else {
-        discount = `${couponTemplate.discountValue} OFF`; // Fixed amount
+        // Use the currency if provided, otherwise default to AED
+        const currency = couponTemplate.currency || "AED";
+        discount = `${currency} ${couponTemplate.discountValue} OFF`; // Fixed amount with currency
       }
       
       // Set validity based on template validity days
