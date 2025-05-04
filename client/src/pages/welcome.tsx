@@ -1,9 +1,42 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function Welcome() {
+  const { user, isLoading } = useAuth();
+  const [, navigate] = useLocation();
+  
+  // Redirect to code session if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/code-session");
+    }
+  }, [user, navigate]);
+
+  // If loading, show loading spinner
+  if (isLoading) {
+    return (
+      <div className="animate-fade-in">
+        <Header />
+        
+        <div className="container mx-auto flex items-center justify-center min-h-[300px]">
+          <div className="text-center">
+            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+        
+        <Footer />
+      </div>
+    );
+  }
+  
+  // If logged in, redirect (handled by useEffect)
+  if (user) return null;
   return (
     <div className="animate-fade-in">
       <Header />

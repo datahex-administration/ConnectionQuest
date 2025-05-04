@@ -17,13 +17,17 @@ import AdminDashboard from "@/pages/admin/dashboard";
 function Router() {
   return (
     <Switch>
+      {/* Public paths */}
       <Route path="/" component={Welcome} />
       <Route path="/register" component={Registration} />
+      <Route path="/admin/login" component={AdminLogin} />
+      
+      {/* Protected paths - require user authentication */}
       <ProtectedRoute path="/code-session" component={CodeSession} />
       <ProtectedRoute path="/game/:code" component={Game} />
       <ProtectedRoute path="/results/:code" component={Results} />
-      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
+      
       <Route component={NotFound} />
     </Switch>
   );
