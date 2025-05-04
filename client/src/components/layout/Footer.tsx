@@ -7,7 +7,7 @@ interface FooterProps {
   showAdminLink?: boolean;
 }
 
-export function Footer({ showAdminLink = true }: FooterProps) {
+export function Footer({ showAdminLink = false }: FooterProps) {
   const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings"],
     queryFn: getQueryFn({ on401: "returnNull" }),

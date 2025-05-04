@@ -689,6 +689,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Coupon Template Management Routes
+  app.get('/api/admin/coupon-templates', requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string || "";
+      
+      const templates = await storage.getCouponTemplates(limit, (page - 1) * limit, search);
+      const totalCount = await storage.getTotalCouponTemplates(search);
+      
+      return res.status(200).json({
+        templates,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          totalItems: totalCount
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching coupon templates:", error);
+      return res.status(500).json({ error: "Failed to fetch coupon templates" });
+    }
+  });
+  
+  app.get('/api/admin/coupon-templates/:id', requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const template = await storage.getCouponTemplateById(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ error: "Coupon template not found" });
+      }
+      
+      return res.status(200).json(template);
+    } catch (error) {
+      console.error("Error fetching coupon template:", error);
+      return res.status(500).json({ error: "Failed to fetch coupon template" });
+    }
+  });
+  
+  app.post('/api/admin/coupon-templates', requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const templateData = insertCouponTemplateSchema.parse(req.body);
+      const newTemplate = await storage.createCouponTemplate(templateData);
+      
+      return res.status(201).json(newTemplate);
+    } catch (error) {
+      console.error("Error creating coupon template:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      return res.status(500).json({ error: "Failed to create coupon template" });
+    }
+  });
+  
+  app.put('/api/admin/coupon-templates/:id', requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const template = await storage.getCouponTemplateById(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ error: "Coupon template not found" });
+      }
+      
+      const templateData = insertCouponTemplateSchema.parse(req.body);
+      const updatedTemplate = await storage.updateCouponTemplate(templateId, templateData);
+      
+      return res.status(200).json(updatedTemplate);
+    } catch (error) {
+      console.error("Error updating coupon template:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      return res.status(500).json({ error: "Failed to update coupon template" });
+    }
+  });
+  
+  app.delete('/api/admin/coupon-templates/:id', requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const template = await storage.getCouponTemplateById(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ error: "Coupon template not found" });
+      }
+      
+      await storage.deleteCouponTemplate(templateId);
+      
+      return res.status(200).json({ message: "Coupon template deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting coupon template:", error);
+      return res.status(500).json({ error: "Failed to delete coupon template" });
+    }
+  });
+  
+  app.patch('/api/admin/coupon-templates/:id/status', requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ error: "isActive must be a boolean value" });
+      }
+      
+      const template = await storage.getCouponTemplateById(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ error: "Coupon template not found" });
+      }
+      
+      const updatedTemplate = await storage.toggleCouponTemplateStatus(templateId, isActive);
+      
+      return res.status(200).json(updatedTemplate);
+    } catch (error) {
+      console.error("Error updating coupon template status:", error);
+      return res.status(500).json({ error: "Failed to update coupon template status" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
   return httpServer;
