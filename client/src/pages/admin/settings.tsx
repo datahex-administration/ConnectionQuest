@@ -30,6 +30,7 @@ const FormSchema = updateSettingsSchema;
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
 
@@ -167,8 +168,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-
-  const [, navigate] = useLocation();
   
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -351,7 +350,7 @@ export default function SettingsPage() {
             <Button 
               type="submit" 
               disabled={mutation.isPending}
-              className="min-w-[120px]"
+              className="min-w-[120px] bg-primary text-white hover:bg-primary/90"
             >
               {mutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
