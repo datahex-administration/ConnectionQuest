@@ -176,7 +176,7 @@ export default function SettingsPage() {
         <Button 
           variant="outline" 
           onClick={() => navigate('/admin/dashboard')}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-gray-300 hover:bg-gray-100"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
@@ -350,7 +350,7 @@ export default function SettingsPage() {
             <Button 
               type="submit" 
               disabled={mutation.isPending}
-              className="min-w-[120px] bg-primary text-white hover:bg-primary/90"
+              className="min-w-[120px] bg-[#8e2c8e] text-white hover:bg-[#8e2c8e]/90"
             >
               {mutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
