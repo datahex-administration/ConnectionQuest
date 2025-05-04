@@ -613,6 +613,7 @@ export default function AdminCouponTemplates() {
                     resetForm();
                     setIsFormOpen(false);
                   }}
+                  className="border-gray-300 hover:bg-gray-100"
                 >
                   Cancel
                 </Button>
@@ -645,6 +646,7 @@ export default function AdminCouponTemplates() {
             <Button 
               variant="outline" 
               onClick={() => setDeleteDialogOpen(false)}
+              className="border-gray-300 hover:bg-gray-100"
             >
               Cancel
             </Button>
@@ -652,6 +654,7 @@ export default function AdminCouponTemplates() {
               variant="destructive"
               onClick={() => templateToDelete && deleteMutation.mutate(templateToDelete)}
               disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               {deleteMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
