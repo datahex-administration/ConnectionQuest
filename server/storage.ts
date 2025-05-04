@@ -123,6 +123,17 @@ export const storage = {
       }
     });
   },
+  
+  async hasUserSubmittedAnswers(sessionId: number, userId: number): Promise<boolean> {
+    const answers = await db.query.userAnswers.findMany({
+      where: and(
+        eq(userAnswers.sessionId, sessionId),
+        eq(userAnswers.userId, userId)
+      )
+    });
+    
+    return answers.length > 0;
+  },
 
   async areAllAnswersSubmitted(sessionId: number): Promise<boolean> {
     // 1. Get all participants in this session

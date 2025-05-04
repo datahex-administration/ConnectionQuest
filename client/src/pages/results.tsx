@@ -113,11 +113,32 @@ export default function Results() {
                 </div>
                 
                 {results?.matchingAnswers && results.matchingAnswers.length > 0 && (
-                  <div className="bg-primary/10 rounded-lg p-4 mb-6">
+                  <div className="bg-primary/10 rounded-lg p-4 mb-4">
                     <h3 className="font-semibold text-primary mb-2">Matching Answers:</h3>
                     <ul className="list-disc list-inside text-gray-700 space-y-1">
                       {results.matchingAnswers.map((match, index) => (
                         <li key={index}>You both {match.question.toLowerCase().includes("favorite") ? "love" : "chose"} {match.answer.toLowerCase()}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {results?.nonMatchingAnswers && results.nonMatchingAnswers.length > 0 && (
+                  <div className="bg-accent/10 rounded-lg p-4 mb-6">
+                    <h3 className="font-semibold text-accent mb-2">Different Answers:</h3>
+                    <ul className="list-none text-gray-700 space-y-3">
+                      {results.nonMatchingAnswers.map((item, index) => (
+                        <li key={index} className="border-b border-accent/10 pb-2 last:border-0 last:pb-0">
+                          <p className="font-medium text-gray-800">{item.question}</p>
+                          <div className="grid grid-cols-2 gap-2 mt-1 text-sm">
+                            <div>
+                              <span className="text-primary/80 font-medium">You:</span> {item.yourAnswer}
+                            </div>
+                            <div>
+                              <span className="text-accent/80 font-medium">Partner:</span> {item.partnerAnswer}
+                            </div>
+                          </div>
+                        </li>
                       ))}
                     </ul>
                   </div>

@@ -308,6 +308,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/sessions/:code/user-status", async (req, res) => {
+    try {
+      const userId = Number(req.query.userId);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const { code } = req.params;
+      const gameSession = await storage.getGameSessionByCode(code);
+      
+      if (!gameSession) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      const hasSubmitted = await storage.hasUserSubmittedAnswers(gameSession.id, userId);
+      
+      return res.status(200).json({ hasSubmitted });
+    } catch (error) {
+      console.error("Error checking user session status:", error);
+      return res.status(500).json({ error: "Failed to check user status" });
+    }
+  });
+  
   app.get("/api/sessions/:code/results-status", async (req, res) => {
     try {
       const userId = getUserIdFromRequest(req);
