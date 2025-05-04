@@ -285,17 +285,34 @@ export const storage = {
     await db.delete(questionOptions).where(eq(questionOptions.id, id));
   },
 
-  async getTotalGameSessions(): Promise<number> {
-    const { count } = await db.select({ count: sql`count(*)` }).from(gameSessions).then(rows => rows[0]);
-    return Number(count);
+  async getTotalGameSessions(search: string = ""): Promise<number> {
+    // Base query
+    let query = db.select({ count: sql`count(*)` }).from(gameSessions);
+    
+    // Apply search filter if provided
+    if (search) {
+      query = query.where(
+        sql`LOWER(${gameSessions.sessionCode}) LIKE LOWER(${'%' + search + '%'})`
+      );
+    }
+    
+    const result = await query.then(rows => rows[0]);
+    return Number(result.count);
   },
 
-  async getGameSessionsWithParticipants(limit: number = 10, offset: number = 0): Promise<any[]> {
+  async getGameSessionsWithParticipants(limit: number = 10, offset: number = 0, search: string = ""): Promise<any[]> {
+    // Build query with search if provided
+    let where = undefined;
+    if (search) {
+      where = sql`LOWER(${gameSessions.sessionCode}) LIKE LOWER(${'%' + search + '%'})`;
+    }
+    
     // Get all sessions with pagination
     const sessions = await db.query.gameSessions.findMany({
       orderBy: [desc(gameSessions.createdAt)],
       limit,
       offset,
+      where,
       with: {
         participants: {
           with: {
