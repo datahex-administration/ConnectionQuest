@@ -442,11 +442,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/participants", requireAdmin, async (req: AuthRequest, res) => {
     try {
-      const participants = await storage.getRecentParticipants();
-      return res.status(200).json(participants);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const participants = await storage.getRecentParticipants(limit, (page - 1) * limit);
+      const totalCount = await storage.getTotalParticipants();
+      
+      return res.status(200).json({
+        participants,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          totalItems: totalCount
+        }
+      });
     } catch (error) {
       console.error("Error fetching participants:", error);
       return res.status(500).json({ error: "Failed to fetch participants" });
+    }
+  });
+  
+  app.get("/api/admin/sessions", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const sessions = await storage.getGameSessionsWithParticipants(limit, (page - 1) * limit);
+      const totalCount = await storage.getTotalGameSessions();
+      
+      return res.status(200).json({
+        sessions,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          totalItems: totalCount
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching game sessions:", error);
+      return res.status(500).json({ error: "Failed to fetch game sessions" });
     }
   });
 

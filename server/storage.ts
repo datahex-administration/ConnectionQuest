@@ -269,10 +269,52 @@ export const storage = {
     await db.delete(questionOptions).where(eq(questionOptions.id, id));
   },
 
-  async getRecentParticipants(limit: number = 10): Promise<(User & { matchStatus: string })[]> {
+  async getTotalGameSessions(): Promise<number> {
+    const { count } = await db.select({ count: sql`count(*)` }).from(gameSessions).then(rows => rows[0]);
+    return Number(count);
+  },
+
+  async getGameSessionsWithParticipants(limit: number = 10, offset: number = 0): Promise<any[]> {
+    // Get all sessions with pagination
+    const sessions = await db.query.gameSessions.findMany({
+      orderBy: [desc(gameSessions.createdAt)],
+      limit,
+      offset,
+      with: {
+        participants: {
+          with: {
+            user: true
+          }
+        }
+      }
+    });
+
+    // For each session, check if there's a voucher
+    const sessionsWithVouchers = await Promise.all(
+      sessions.map(async (session) => {
+        const voucher = await db.query.vouchers.findFirst({
+          where: eq(vouchers.sessionId, session.id)
+        });
+
+        return {
+          ...session,
+          voucher,
+          participants: session.participants.map(p => ({
+            ...p,
+            user: p.user
+          }))
+        };
+      })
+    );
+
+    return sessionsWithVouchers;
+  },
+
+  async getRecentParticipants(limit: number = 10, offset: number = 0): Promise<(User & { matchStatus: string; sessionCode?: string; voucherCode?: string })[]> {
     const recentUsers = await db.query.users.findMany({
       orderBy: [desc(users.createdAt)],
-      limit
+      limit,
+      offset
     });
 
     // For each user, determine their match status
@@ -287,21 +329,66 @@ export const storage = {
         });
 
         let matchStatus = "No Match";
+        let sessionCode;
+        let voucherCode;
+
         if (participations.length > 0) {
           const mostRecentSession = participations.reduce((latest, current) => 
             new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
           );
 
-          if (mostRecentSession.session.completed) {
+          // Add session code
+          sessionCode = mostRecentSession.session?.sessionCode;
+
+          // Check if the session is complete
+          if (mostRecentSession.session?.completed) {
             matchStatus = "Completed";
+
+            // Check if there's a voucher for this session
+            const voucher = await db.query.vouchers.findFirst({
+              where: eq(vouchers.sessionId, mostRecentSession.session.id)
+            });
+
+            if (voucher) {
+              voucherCode = voucher.voucherCode;
+              matchStatus = voucher.downloaded ? "Voucher Downloaded" : "Voucher Generated";
+            } else {
+              matchStatus = "No Voucher";
+            }
           } else {
-            matchStatus = "Pending";
+            // Get number of participants in the session
+            const participants = await db.query.sessionParticipants.findMany({
+              where: eq(sessionParticipants.sessionId, mostRecentSession.session!.id)
+            });
+
+            // Get number of answers submitted for this session
+            const submittedAnswers = await db.query.userAnswers.findMany({
+              where: eq(userAnswers.sessionId, mostRecentSession.session!.id)
+            });
+
+            // If the participant count is 2 and there are answers, but the session is not complete
+            if (participants.length === 2) {
+              const userHasSubmitted = await this.hasUserSubmittedAnswers(
+                mostRecentSession.session!.id,
+                user.id
+              );
+              
+              if (userHasSubmitted) {
+                matchStatus = "Waiting for Partner";
+              } else {
+                matchStatus = "Not Submitted";
+              }
+            } else {
+              matchStatus = "Waiting for Partner to Join";
+            }
           }
         }
 
         return {
           ...user,
-          matchStatus
+          matchStatus,
+          sessionCode,
+          voucherCode
         };
       })
     );

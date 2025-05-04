@@ -15,6 +15,7 @@ import Results from "@/pages/results";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminQuestions from "@/pages/admin/questions";
+import AdminParticipants from "@/pages/admin/participants";
 
 function Router() {
   return (
@@ -33,6 +34,9 @@ function Router() {
       </Route>
       <Route path="/admin/questions">
         {() => <AdminRoute component={AdminQuestions} />}
+      </Route>
+      <Route path="/admin/participants">
+        {() => <AdminRoute component={AdminParticipants} />}
       </Route>
       
       <Route component={NotFound} />
