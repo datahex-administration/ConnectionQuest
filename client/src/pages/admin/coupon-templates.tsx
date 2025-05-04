@@ -299,6 +299,7 @@ export default function AdminCouponTemplates() {
                     resetForm();
                     setIsFormOpen(true);
                   }}
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Template
@@ -618,6 +619,7 @@ export default function AdminCouponTemplates() {
                 <Button 
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   {(createMutation.isPending || updateMutation.isPending) && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
