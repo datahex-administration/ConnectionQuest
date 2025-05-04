@@ -58,7 +58,7 @@ export default function Welcome() {
               <Link href="/register">
                 <Button 
                   size="lg" 
-                  className="btn-primary text-white font-semibold py-4 px-8 rounded-full shadow-lg text-lg"
+                  className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg bg-[#800000] text-white hover:bg-[#600000]"
                 >
                   Let's Get Started
                 </Button>
@@ -80,30 +80,15 @@ export default function Welcome() {
         </div>
       </div>
       
-      {/* Features section */}
-      <div className="container px-4 py-12 mx-auto max-w-6xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
-            <div className="text-primary text-3xl font-bold mb-2">Play Together</div>
-            <p className="text-gray-600">Answer questions with your partner and discover your compatibility.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
-            <div className="text-primary text-3xl font-bold mb-2">Match Up</div>
-            <p className="text-gray-600">See how well your answers align and learn more about each other.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
-            <div className="text-primary text-3xl font-bold mb-2">Win Rewards</div>
-            <p className="text-gray-600">Get exclusive vouchers based on your compatibility score.</p>
-          </div>
-        </div>
-      </div>
+      {/* Spacer */}
+      <div className="py-6"></div>
       
       {/* Mobile-only CTA button for immediate visibility without scrolling */}
       <div className="fixed bottom-8 left-0 right-0 text-center z-10 md:hidden px-4">
         <Link href="/register">
           <Button 
             size="lg" 
-            className="w-full btn-primary text-white font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow"
+            className="w-full font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow bg-[#800000] text-white hover:bg-[#600000]"
           >
             Start Now!
           </Button>
