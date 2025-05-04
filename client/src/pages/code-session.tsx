@@ -126,7 +126,12 @@ export default function CodeSession() {
       });
       const result = await response.json();
       
-      if (result.success || result.sessionCode) {
+      if (result.success) {
+        // If response includes user data with token, update localStorage
+        if (result.user && result.user.token) {
+          localStorage.setItem('mawadha_auth_token', result.user.token);
+        }
+        
         // Refresh user data to ensure session is up to date
         queryClient.invalidateQueries({ queryKey: ["/api/user"] });
         

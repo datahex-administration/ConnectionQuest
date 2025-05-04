@@ -20,12 +20,45 @@ export async function apiRequest(
   if (data) headers["Content-Type"] = "application/json";
   if (authToken) headers["x-user-token"] = authToken;
   
-  const res = await fetch(url, {
+  let res = await fetch(url, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
+
+  // Handle 401 errors by trying to refresh the user session
+  if (res.status === 401 && url !== '/api/user') {
+    // Attempt to refresh session by fetching user data
+    try {
+      const userRes = await fetch('/api/user', {
+        method: 'GET',
+        headers: { ...headers },
+        credentials: "include"
+      });
+      
+      // If user data is successfully refreshed, retry the original request
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        // If the response includes a token, update localStorage
+        if (userData && userData.token) {
+          localStorage.setItem('mawadha_auth_token', userData.token);
+          // Update headers with the new token
+          headers["x-user-token"] = userData.token;
+        }
+        
+        // Retry the original request with updated auth token
+        res = await fetch(url, {
+          method,
+          headers,
+          body: data ? JSON.stringify(data) : undefined,
+          credentials: "include",
+        });
+      }
+    } catch (e) {
+      console.log('Failed to refresh session:', e);
+    }
+  }
 
   await throwIfResNotOk(res);
   return res;
@@ -37,24 +70,21 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Get auth token from localStorage if available
-    const authToken = localStorage.getItem('mawadha_auth_token');
-    
-    // Set up headers with auth token if available
-    const headers: Record<string, string> = {};
-    if (authToken) headers["x-user-token"] = authToken;
-    
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-      headers
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    try {
+      // Use our enhanced apiRequest function for consistent auth handling
+      const res = await apiRequest("GET", queryKey[0] as string);
+      return await res.json();
+    } catch (error) {
+      // Handle 401 errors according to the specified behavior
+      if (
+        error instanceof Error && 
+        error.message.includes("401") && 
+        unauthorizedBehavior === "returnNull"
+      ) {
+        return null;
+      }
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({

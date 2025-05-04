@@ -215,7 +215,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Session not found or full" });
       }
       
-      return res.status(200).json({ success: true });
+      // After successful join, get user data to return to client
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      // Generate a fresh token for this user
+      const userToken = `user_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      activeUserSessions.set(userToken, user.id);
+      
+      // Make sure session is fully saved before returning
+      if (req.session) {
+        req.session.userId = userId;
+        await new Promise<void>((resolve, reject) => {
+          req.session.save(err => {
+            if (err) {
+              console.error("Error saving session in join:", err);
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+      
+      return res.status(200).json({ 
+        success: true, 
+        user: {
+          ...user,
+          token: userToken // Include token for client to store
+        }
+      });
     } catch (error) {
       console.error("Error joining game session:", error);
       return res.status(500).json({ error: "Failed to join game session" });
