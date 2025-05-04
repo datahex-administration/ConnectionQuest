@@ -192,6 +192,14 @@ export default function AdminDashboard() {
                   >
                     View Participants & Sessions
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/admin/settings")}
+                    className="text-sm"
+                  >
+                    Site Settings
+                  </Button>
                 </div>
               </div>
               <Button 
