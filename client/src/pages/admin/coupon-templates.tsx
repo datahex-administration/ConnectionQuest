@@ -299,7 +299,7 @@ export default function AdminCouponTemplates() {
                     resetForm();
                     setIsFormOpen(true);
                   }}
-                  className="bg-primary hover:bg-primary/90 text-white"
+                  className="min-w-[120px]"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Template
@@ -605,7 +605,7 @@ export default function AdminCouponTemplates() {
                 )}
               />
               
-              <DialogFooter>
+              <DialogFooter className="flex gap-2 mt-6">
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -613,19 +613,19 @@ export default function AdminCouponTemplates() {
                     resetForm();
                     setIsFormOpen(false);
                   }}
-                  className="border-gray-300 hover:bg-gray-100"
+                  className="border-gray-300 hover:bg-gray-100 min-w-[100px]"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="bg-primary hover:bg-primary/90 text-white"
+                  className="min-w-[100px] bg-[#8e2c8e] hover:bg-[#8e2c8e]/90 text-white"
                 >
                   {(createMutation.isPending || updateMutation.isPending) && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {editingTemplate ? "Update" : "Create"}
+                  {editingTemplate ? "Update" : "Save"}
                 </Button>
               </DialogFooter>
             </form>
@@ -642,11 +642,11 @@ export default function AdminCouponTemplates() {
               Are you sure you want to delete this coupon template? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex gap-2 mt-6">
             <Button 
               variant="outline" 
               onClick={() => setDeleteDialogOpen(false)}
-              className="border-gray-300 hover:bg-gray-100"
+              className="border-gray-300 hover:bg-gray-100 min-w-[100px]"
             >
               Cancel
             </Button>
@@ -654,7 +654,7 @@ export default function AdminCouponTemplates() {
               variant="destructive"
               onClick={() => templateToDelete && deleteMutation.mutate(templateToDelete)}
               disabled={deleteMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white min-w-[100px]"
             >
               {deleteMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
