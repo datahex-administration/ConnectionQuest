@@ -42,31 +42,33 @@ export default function Welcome() {
       <Header />
       
       {/* Hero section with background gradient */}
-      <div className="bg-gradient-to-b from-primary/10 to-secondary py-8 md:py-16">
-        <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="bg-gradient-to-b from-primary/10 to-secondary py-6 md:py-12">
+        <div className="container px-3 mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
             {/* Left side content */}
             <div className="text-center md:text-left md:max-w-md lg:max-w-xl">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-3">
                 Compatibility Challenge
               </h1>
-              <p className="text-lg text-gray-700 mb-6">
+              <p className="text-base md:text-lg text-gray-700 mb-4">
                 Discover how well you know your partner through our fun compatibility
                 game and win exclusive vouchers together!
               </p>
               
-              <Link href="/register">
-                <Button 
-                  size="lg" 
-                  className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg bg-[#8e2c8e] hover:bg-[#742374] text-white"
-                >
-                  Let's Get Started
-                </Button>
-              </Link>
+              <div className="hidden md:block">
+                <Link href="/register">
+                  <Button 
+                    size="lg" 
+                    className="font-semibold py-3 px-6 rounded-full shadow-lg text-base md:text-lg bg-[#8e2c8e] hover:bg-[#742374] text-white"
+                  >
+                    Let's Get Started
+                  </Button>
+                </Link>
+              </div>
             </div>
             
             {/* Right side banner - responsive for mobile and desktop */}
-            <div className="w-full md:w-1/2 lg:w-2/5 mt-8 md:mt-0">
+            <div className="w-full md:w-1/2 lg:w-2/5 mt-4 md:mt-0">
               <div className="relative rounded-lg shadow-xl overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1515169067868-5387ec356754?q=80&w=1000" 
@@ -80,15 +82,22 @@ export default function Welcome() {
         </div>
       </div>
       
-      {/* Spacer */}
-      <div className="py-6"></div>
-      
-      {/* Mobile-only CTA button for immediate visibility without scrolling */}
-      <div className="fixed bottom-8 left-0 right-0 text-center z-10 md:hidden px-4">
+      {/* Mobile-only centered button for small screens */}
+      <div className="md:hidden text-center py-4">
         <Link href="/register">
           <Button 
-            size="lg" 
-            className="w-full font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow bg-[#8e2c8e] hover:bg-[#742374] text-white"
+            className="font-semibold py-3 px-6 rounded-full shadow-lg text-base bg-[#8e2c8e] hover:bg-[#742374] text-white"
+          >
+            Let's Get Started
+          </Button>
+        </Link>
+      </div>
+      
+      {/* Mobile-only CTA button for immediate visibility without scrolling */}
+      <div className="fixed bottom-4 left-0 right-0 text-center z-10 md:hidden px-4">
+        <Link href="/register">
+          <Button 
+            className="w-auto px-5 py-2 rounded-full shadow-lg text-base animate-pulse-slow bg-[#8e2c8e] hover:bg-[#742374] text-white"
           >
             Start Now!
           </Button>

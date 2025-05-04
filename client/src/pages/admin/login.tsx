@@ -101,7 +101,7 @@ export default function AdminLogin() {
                 <div className="flex justify-center pt-4">
                   <Button 
                     type="submit" 
-                    className="btn-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg"
+                    className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Logging in..." : "Login"}

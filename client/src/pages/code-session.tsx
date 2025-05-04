@@ -271,7 +271,7 @@ export default function CodeSession() {
                 <div className="flex flex-col space-y-4">
                   <Button 
                     onClick={generateCode} 
-                    className="btn-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg mx-auto"
+                    className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg mx-auto"
                     disabled={isGenerating}
                   >
                     {isGenerating ? (
@@ -301,7 +301,7 @@ export default function CodeSession() {
                   
                   <Button 
                     onClick={joinSession}
-                    className="bg-accent hover:bg-accent/80 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all mx-auto"
+                    className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all mx-auto"
                     disabled={isJoining || !partnerCode.trim()}
                   >
                     {isJoining ? (
@@ -336,7 +336,7 @@ export default function CodeSession() {
                     
                     <Button 
                       onClick={startGame}
-                      className="btn-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg"
+                      className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
                       disabled={checkingStatus}
                     >
                       {checkingStatus ? (
