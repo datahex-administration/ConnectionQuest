@@ -63,7 +63,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/users", data);
       return await res.json();
     },
-    onSuccess: (userData: User) => {
+    onSuccess: (userData: User & { token?: string }) => {
+      // Store the auth token if provided
+      if (userData.token) {
+        // Store in localStorage as fallback
+        localStorage.setItem('mawadha_auth_token', userData.token);
+      }
+      
       queryClient.setQueryData(["/api/user"], userData);
       toast({
         title: "Registration successful",

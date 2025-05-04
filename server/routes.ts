@@ -21,10 +21,26 @@ import {
 import { db } from "@db";
 
 // Middleware to check if user is authenticated
+// Store active user sessions in memory as a fallback when cookies fail
+const activeUserSessions = new Map<string, number>();
+
+// Custom auth middleware that checks both session and fallback token
 function requireUser(req: Request, res: Response, next: NextFunction) {
+  // Check session first
   if (req.session?.userId) {
     return next();
   }
+  
+  // Check for x-user-token header as fallback
+  const userToken = req.headers['x-user-token'] as string;
+  if (userToken && activeUserSessions.has(userToken)) {
+    // Recreate session
+    if (req.session) {
+      req.session.userId = activeUserSessions.get(userToken);
+      return next();
+    }
+  }
+  
   return res.status(401).json({ error: "User not logged in" });
 }
 
@@ -36,11 +52,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
       secret: SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
+      resave: true,
+      saveUninitialized: true,
       cookie: { 
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        secure: false, // Allow non-secure cookies for deployment
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: 'lax'
       },
     })
   );
@@ -85,12 +102,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = insertUserSchema.parse(req.body);
       const newUser = await storage.createUser(userData);
       
+      // Generate a unique token for this user as fallback auth
+      const userToken = `user_${newUser.id}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      activeUserSessions.set(userToken, newUser.id);
+      
       // Store user ID in session
       if (req.session) {
         req.session.userId = newUser.id;
+        // Make sure to save the session
+        req.session.save(err => {
+          if (err) {
+            console.error("Error saving session:", err);
+          }
+        });
       }
       
-      return res.status(201).json(newUser);
+      // Return user with auth token
+      return res.status(201).json({
+        ...newUser,
+        token: userToken  // Client can use this as fallback in x-user-token header
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -101,8 +132,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Game Session Management
+  // Debug endpoint to check session state
+  app.get("/api/debug/session", (req, res) => {
+    return res.status(200).json({
+      sessionExists: !!req.session,
+      userId: req.session?.userId || null,
+      sessionID: req.sessionID || null,
+      cookie: req.session?.cookie || null
+    });
+  });
+
   app.post("/api/sessions/create", async (req, res) => {
     try {
+      // Log session info for debugging
+      console.log("Session create - Session ID:", req.sessionID);
+      console.log("Session create - User ID:", req.session?.userId);
+      
       if (!req.session?.userId) {
         return res.status(401).json({ error: "User not logged in" });
       }
