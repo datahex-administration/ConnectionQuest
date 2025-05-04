@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 // Define form schema
 const formSchema = z.object({
@@ -30,6 +30,8 @@ export default function Registration() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user, registerMutation } = useAuth();
+  const [countryCode, setCountryCode] = useState("+971");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   // Form setup
   const form = useForm<FormValues>({
@@ -136,65 +138,48 @@ export default function Registration() {
                   )}
                 />
                 
-                {/* Using phone input with country code separately */}
-                <div className="space-y-2">
-                  <div>
-                    <label className="text-sm font-medium">WhatsApp Number</label>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Select 
-                      defaultValue="+971"
-                      onValueChange={(value) => {
-                        // Store selected country code
-                        const phoneNumber = form.getValues("whatsappNumber") || "";
-                        // Remove any existing country code
-                        const numberPart = phoneNumber.replace(/^\+\d+/, "");
-                        form.setValue("whatsappNumber", `${value}${numberPart}`);
-                      }}
-                    >
-                      <SelectTrigger className="w-[110px]">
-                        <SelectValue placeholder="Code" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {/* GCC Countries */}
-                        <SelectItem value="+971">UAE +971</SelectItem>
-                        <SelectItem value="+966">KSA +966</SelectItem>
-                        <SelectItem value="+973">Bahrain +973</SelectItem>
-                        <SelectItem value="+974">Qatar +974</SelectItem>
-                        <SelectItem value="+965">Kuwait +965</SelectItem>
-                        <SelectItem value="+968">Oman +968</SelectItem>
-                        {/* India */}
-                        <SelectItem value="+91">India +91</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <FormField
-                      control={form.control}
-                      name="whatsappNumber"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <Input 
-                              type="tel"
-                              placeholder="Enter phone number" 
-                              value={(field.value || "").replace(/^\+\d+/, "")}
-                              onChange={(e) => {
-                                // Get selected country code
-                                const phoneNumber = field.value || "";
-                                const countryCode = phoneNumber.match(/^\+\d+/)?.[0] || "+971";
-                                
-                                // Only allow digits
-                                const newValue = e.target.value.replace(/\D/g, '');
-                                field.onChange(`${countryCode}${newValue}`);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="whatsappNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>WhatsApp Number</FormLabel>
+                      <div className="flex items-center space-x-2">
+                        <Select defaultValue="+971" onValueChange={val => setCountryCode(val)}>
+                          <SelectTrigger className="w-[110px]">
+                            <SelectValue placeholder="Code" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="+971">UAE +971</SelectItem>
+                            <SelectItem value="+966">KSA +966</SelectItem>
+                            <SelectItem value="+973">Bahrain +973</SelectItem>
+                            <SelectItem value="+974">Qatar +974</SelectItem>
+                            <SelectItem value="+965">Kuwait +965</SelectItem>
+                            <SelectItem value="+968">Oman +968</SelectItem>
+                            <SelectItem value="+91">India +91</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <FormControl>
+                          <Input
+                            placeholder="Enter phone number"
+                            type="text"
+                            onChange={(e) => {
+                              // Only allow numbers
+                              const onlyNumbers = e.target.value.replace(/\D/g, '');
+                              setPhoneNumber(onlyNumbers);
+                              
+                              // Update the form field with country code + phone number
+                              field.onChange(`${countryCode}${onlyNumbers}`);
+                            }}
+                            value={phoneNumber}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <div className="flex justify-center pt-4">
                   <Button 
