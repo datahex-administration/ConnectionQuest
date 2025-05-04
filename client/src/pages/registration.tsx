@@ -136,59 +136,65 @@ export default function Registration() {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="whatsappNumber"
-                  render={({ field }) => {
-                    // Split the phone number into country code and number parts
-                    const matches = field.value.match(/^(\+\d+)(\d*)$/);
-                    const countryCode = matches ? matches[1] : "+971";
-                    const phoneNumber = matches ? matches[2] : "";
+                {/* Using phone input with country code separately */}
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-sm font-medium">WhatsApp Number</label>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Select 
+                      defaultValue="+971"
+                      onValueChange={(value) => {
+                        // Store selected country code
+                        const phoneNumber = form.getValues("whatsappNumber") || "";
+                        // Remove any existing country code
+                        const numberPart = phoneNumber.replace(/^\+\d+/, "");
+                        form.setValue("whatsappNumber", `${value}${numberPart}`);
+                      }}
+                    >
+                      <SelectTrigger className="w-[110px]">
+                        <SelectValue placeholder="Code" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* GCC Countries */}
+                        <SelectItem value="+971">UAE +971</SelectItem>
+                        <SelectItem value="+966">KSA +966</SelectItem>
+                        <SelectItem value="+973">Bahrain +973</SelectItem>
+                        <SelectItem value="+974">Qatar +974</SelectItem>
+                        <SelectItem value="+965">Kuwait +965</SelectItem>
+                        <SelectItem value="+968">Oman +968</SelectItem>
+                        {/* India */}
+                        <SelectItem value="+91">India +91</SelectItem>
+                      </SelectContent>
+                    </Select>
                     
-                    return (
-                      <FormItem>
-                        <FormLabel>WhatsApp Number</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <Select 
-                              value={countryCode}
-                              onValueChange={(newCode) => {
-                                field.onChange(`${newCode}${phoneNumber}`);
-                              }}
-                            >
-                              <SelectTrigger className="w-[110px] flex-shrink-0">
-                                <SelectValue placeholder="Code" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {/* GCC Countries */}
-                                <SelectItem value="+971">UAE +971</SelectItem>
-                                <SelectItem value="+966">KSA +966</SelectItem>
-                                <SelectItem value="+973">Bahrain +973</SelectItem>
-                                <SelectItem value="+974">Qatar +974</SelectItem>
-                                <SelectItem value="+965">Kuwait +965</SelectItem>
-                                <SelectItem value="+968">Oman +968</SelectItem>
-                                {/* India */}
-                                <SelectItem value="+91">India +91</SelectItem>
-                              </SelectContent>
-                            </Select>
+                    <FormField
+                      control={form.control}
+                      name="whatsappNumber"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
                             <Input 
                               type="tel"
-                              placeholder="5X XXX XXXX" 
-                              value={phoneNumber}
+                              placeholder="Enter phone number" 
+                              value={(field.value || "").replace(/^\+\d+/, "")}
                               onChange={(e) => {
+                                // Get selected country code
+                                const phoneNumber = field.value || "";
+                                const countryCode = phoneNumber.match(/^\+\d+/)?.[0] || "+971";
+                                
                                 // Only allow digits
-                                const numbers = e.target.value.replace(/\D/g, '');
-                                field.onChange(`${countryCode}${numbers}`);
+                                const newValue = e.target.value.replace(/\D/g, '');
+                                field.onChange(`${countryCode}${newValue}`);
                               }}
-                              className="flex-1"
                             />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
                 
                 <div className="flex justify-center pt-4">
                   <Button 
