@@ -17,7 +17,7 @@ import { useEffect } from "react";
 // Define form schema
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  gender: z.enum(["male", "female", "other", "prefer-not-to-say"], {
+  gender: z.enum(["male", "female"], {
     required_error: "Please select your gender",
   }),
   age: z.coerce.number().min(18, "You must be at least 18 years old").max(100, "Age must be 100 or below"),
@@ -105,8 +105,6 @@ export default function Registration() {
                         <SelectContent>
                           <SelectItem value="male">Male</SelectItem>
                           <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -143,9 +141,42 @@ export default function Registration() {
                   name="whatsappNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>WhatsApp Number (with country code)</FormLabel>
+                      <FormLabel>WhatsApp Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="+1234567890" {...field} />
+                        <div className="flex items-center space-x-2">
+                          <Select 
+                            onValueChange={(value) => {
+                              // Extract just the number part if there's an existing value
+                              const currentNumber = field.value.replace(/^\+\d+\s*/, '');
+                              field.onChange(`${value}${currentNumber}`);
+                            }}
+                            defaultValue="+971">
+                            <SelectTrigger className="w-[110px] flex-shrink-0">
+                              <SelectValue placeholder="Code" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* GCC Countries */}
+                              <SelectItem value="+971">UAE +971</SelectItem>
+                              <SelectItem value="+966">KSA +966</SelectItem>
+                              <SelectItem value="+973">Bahrain +973</SelectItem>
+                              <SelectItem value="+974">Qatar +974</SelectItem>
+                              <SelectItem value="+965">Kuwait +965</SelectItem>
+                              <SelectItem value="+968">Oman +968</SelectItem>
+                              {/* India */}
+                              <SelectItem value="+91">India +91</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Input 
+                            placeholder="5X XXX XXXX" 
+                            value={field.value.replace(/^\+\d+\s*/, '')} 
+                            onChange={(e) => {
+                              // Extract country code from current value
+                              const countryCode = field.value.match(/^\+\d+/);
+                              const prefix = countryCode ? countryCode[0] : '+971';
+                              field.onChange(`${prefix}${e.target.value}`);
+                            }}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

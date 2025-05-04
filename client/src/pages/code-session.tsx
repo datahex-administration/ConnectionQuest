@@ -18,7 +18,7 @@ export default function CodeSession() {
   const [partnerJoined, setPartnerJoined] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { userId } = useGameSession();
+  const { user, isLoading } = useAuth();
 
   // Poll for partner status if we have a session code
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function CodeSession() {
   }, [sessionCode]);
 
   const generateCode = async () => {
-    if (!userId) {
+    if (!user) {
       toast({
         title: "Registration Required",
         description: "Please register first to generate a code.",
@@ -82,7 +82,7 @@ export default function CodeSession() {
   };
 
   const joinSession = async () => {
-    if (!userId) {
+    if (!user) {
       toast({
         title: "Registration Required",
         description: "Please register first to join a session.",
@@ -131,6 +131,24 @@ export default function CodeSession() {
     }
   };
 
+  // Show loading state while checking auth status
+  if (isLoading) {
+    return (
+      <div className="animate-fade-in">
+        <Header />
+        
+        <div className="max-w-md mx-auto flex items-center justify-center min-h-[300px]">
+          <div className="text-center">
+            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-gray-600">Loading your profile...</p>
+          </div>
+        </div>
+        
+        <Footer />
+      </div>
+    );
+  }
+  
   return (
     <div className="animate-fade-in">
       <Header />
@@ -152,7 +170,12 @@ export default function CodeSession() {
                     className="btn-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg mx-auto"
                     disabled={isGenerating}
                   >
-                    {isGenerating ? "Generating..." : "Generate New Code"}
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : "Generate New Code"}
                   </Button>
                   
                   <div className="text-center my-4">
