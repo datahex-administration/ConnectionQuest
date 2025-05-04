@@ -173,7 +173,17 @@ export default function AdminDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
+              <div className="flex items-center gap-4">
+                <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/questions")}
+                  className="text-sm"
+                >
+                  Manage Questions
+                </Button>
+              </div>
               <Button 
                 onClick={handleLogout}
                 className="text-sm text-primary bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20"

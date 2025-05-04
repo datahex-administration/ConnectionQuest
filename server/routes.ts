@@ -450,6 +450,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Question Management Routes
+  app.get("/api/admin/questions", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const questions = await storage.getQuestions();
+      return res.status(200).json(questions);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      return res.status(500).json({ error: "Failed to fetch questions" });
+    }
+  });
+
+  app.post("/api/admin/questions", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { text, questionType, options } = req.body;
+      
+      // Create the question
+      const question = await storage.createQuestion({
+        text,
+        questionType
+      });
+      
+      // Add options for the question
+      for (const option of options) {
+        await storage.createQuestionOption({
+          questionId: question.id,
+          optionText: option.optionText
+        });
+      }
+      
+      // Get the complete question with options
+      const fullQuestion = await storage.getQuestionById(question.id);
+      
+      return res.status(201).json(fullQuestion);
+    } catch (error) {
+      console.error("Error creating question:", error);
+      return res.status(500).json({ error: "Failed to create question" });
+    }
+  });
+
+  app.put("/api/admin/questions/:id", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const questionId = parseInt(req.params.id);
+      const { text, questionType, options } = req.body;
+      
+      // Update the question
+      await storage.updateQuestion(questionId, {
+        text,
+        questionType
+      });
+      
+      // Get existing options
+      const existingQuestion = await storage.getQuestionById(questionId);
+      if (!existingQuestion) {
+        return res.status(404).json({ error: "Question not found" });
+      }
+      
+      // Delete existing options
+      for (const option of existingQuestion.options) {
+        await storage.deleteQuestionOption(option.id);
+      }
+      
+      // Add new options
+      for (const option of options) {
+        await storage.createQuestionOption({
+          questionId,
+          optionText: option.optionText
+        });
+      }
+      
+      // Get the updated question with new options
+      const updatedQuestion = await storage.getQuestionById(questionId);
+      
+      return res.status(200).json(updatedQuestion);
+    } catch (error) {
+      console.error("Error updating question:", error);
+      return res.status(500).json({ error: "Failed to update question" });
+    }
+  });
+
+  app.delete("/api/admin/questions/:id", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const questionId = parseInt(req.params.id);
+      
+      // Get the question to check if it exists
+      const question = await storage.getQuestionById(questionId);
+      if (!question) {
+        return res.status(404).json({ error: "Question not found" });
+      }
+      
+      // Delete options first (foreign key constraint)
+      for (const option of question.options) {
+        await storage.deleteQuestionOption(option.id);
+      }
+      
+      // Delete the question
+      await storage.deleteQuestion(questionId);
+      
+      return res.status(200).json({ message: "Question deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      return res.status(500).json({ error: "Failed to delete question" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
   return httpServer;

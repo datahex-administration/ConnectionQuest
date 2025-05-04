@@ -216,7 +216,7 @@ export const storage = {
   },
 
   async getUsersByAgeGroups(): Promise<{ ageGroup: string; count: number }[]> {
-    const result = await db.execute(sql`
+    const result = await db.execute<{ ageGroup: string; count: number }>(sql`
       SELECT
         CASE
           WHEN age BETWEEN 18 AND 24 THEN '18-24'
@@ -229,7 +229,44 @@ export const storage = {
       GROUP BY "ageGroup"
       ORDER BY "ageGroup"
     `);
-    return result;
+    
+    // Ensure the result is properly formatted as an array of objects
+    return Array.isArray(result) ? result : (result.rows || []);
+  },
+
+  // Question CRUD operations
+  async getQuestionById(id: number): Promise<(Question & { options: QuestionOption[] }) | undefined> {
+    const question = await db.query.questions.findFirst({
+      where: eq(questions.id, id),
+      with: {
+        options: true
+      }
+    });
+    return question;
+  },
+
+  async createQuestion(questionData: { text: string; questionType: string }): Promise<Question> {
+    const [newQuestion] = await db.insert(questions).values(questionData).returning();
+    return newQuestion;
+  },
+
+  async updateQuestion(id: number, questionData: { text: string; questionType: string }): Promise<void> {
+    await db.update(questions)
+      .set(questionData)
+      .where(eq(questions.id, id));
+  },
+
+  async deleteQuestion(id: number): Promise<void> {
+    await db.delete(questions).where(eq(questions.id, id));
+  },
+
+  async createQuestionOption(optionData: { questionId: number; optionText: string }): Promise<QuestionOption> {
+    const [newOption] = await db.insert(questionOptions).values(optionData).returning();
+    return newOption;
+  },
+
+  async deleteQuestionOption(id: number): Promise<void> {
+    await db.delete(questionOptions).where(eq(questionOptions.id, id));
   },
 
   async getRecentParticipants(limit: number = 10): Promise<(User & { matchStatus: string })[]> {
