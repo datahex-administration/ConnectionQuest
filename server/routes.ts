@@ -448,8 +448,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const participants = await storage.getRecentParticipants(limit, (page - 1) * limit);
-      const totalCount = await storage.getTotalParticipants();
+      const search = req.query.search as string || "";
+      const status = req.query.status as string || "";
+      
+      // Get participants with search and filter
+      const participants = await storage.getRecentParticipants(limit, (page - 1) * limit, search, status);
+      const totalCount = await storage.getTotalParticipants(search, status);
       
       return res.status(200).json({
         participants,
@@ -469,8 +473,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const sessions = await storage.getGameSessionsWithParticipants(limit, (page - 1) * limit);
-      const totalCount = await storage.getTotalGameSessions();
+      const search = req.query.search as string || "";
+      
+      // Get sessions with search
+      const sessions = await storage.getGameSessionsWithParticipants(limit, (page - 1) * limit, search);
+      const totalCount = await storage.getTotalGameSessions(search);
       
       return res.status(200).json({
         sessions,

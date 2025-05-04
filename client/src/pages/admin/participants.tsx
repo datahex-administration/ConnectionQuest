@@ -53,9 +53,16 @@ function ParticipantsList() {
   const sessionsTableRef = useRef<HTMLTableElement>(null);
   
   const { data, isLoading } = useQuery({
-    queryKey: ["/api/admin/participants", page],
+    queryKey: ["/api/admin/participants", page, searchTerm, statusFilter],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/participants?page=${page}&limit=10`);
+      let url = `/api/admin/participants?page=${page}&limit=10`;
+      if (searchTerm) {
+        url += `&search=${encodeURIComponent(searchTerm)}`;
+      }
+      if (statusFilter && statusFilter !== "all") {
+        url += `&status=${encodeURIComponent(statusFilter)}`;
+      }
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch participants");
       }
@@ -64,15 +71,130 @@ function ParticipantsList() {
   });
 
   const { data: sessionsData, isLoading: isLoadingSessions } = useQuery({
-    queryKey: ["/api/admin/sessions", page],
+    queryKey: ["/api/admin/sessions", page, sessionSearch],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/sessions?page=${page}&limit=10`);
+      let url = `/api/admin/sessions?page=${page}&limit=10`;
+      if (sessionSearch) {
+        url += `&search=${encodeURIComponent(sessionSearch)}`;
+      }
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch sessions");
       }
       return response.json();
     }
   });
+  
+  // Function to export participants to PDF
+  const exportParticipantsToPDF = async () => {
+    // Fetch all participants for export
+    let url = `/api/admin/participants?limit=1000`;
+    if (searchTerm) {
+      url += `&search=${encodeURIComponent(searchTerm)}`;
+    }
+    if (statusFilter && statusFilter !== "all") {
+      url += `&status=${encodeURIComponent(statusFilter)}`;
+    }
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Failed to fetch all participants");
+    }
+    const result = await response.json();
+    const { participants } = result;
+    
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Participants List", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, 30);
+    
+    // Create table data
+    const tableColumn = ["Name", "WhatsApp", "Gender", "Age", "Status", "Session Code", "Voucher"];
+    const tableRows: any[] = [];
+    
+    participants.forEach((participant: any) => {
+      const participantData = [
+        participant.name,
+        participant.whatsappNumber,
+        participant.gender,
+        participant.age,
+        participant.matchStatus,
+        participant.sessionCode || "-",
+        participant.voucherCode || "-"
+      ];
+      tableRows.push(participantData);
+    });
+    
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [128, 0, 128] }
+    });
+    
+    doc.save("participants-list.pdf");
+  };
+  
+  // Function to export sessions to PDF
+  const exportSessionsToPDF = async () => {
+    // Fetch all sessions for export
+    let url = `/api/admin/sessions?limit=1000`;
+    if (sessionSearch) {
+      url += `&search=${encodeURIComponent(sessionSearch)}`;
+    }
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Failed to fetch all sessions");
+    }
+    const result = await response.json();
+    const { sessions } = result;
+    
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Sessions List", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, 30);
+    
+    // Create table data
+    const tableColumn = ["Session Code", "Created Date", "Status", "Participants", "Voucher"];
+    const tableRows: any[] = [];
+    
+    sessions.forEach((session: any) => {
+      const participantNames = session.participants
+        .map((p: any) => p.user.name)
+        .join(", ");
+        
+      const voucherStatus = session.voucher 
+        ? `${session.voucher.voucherCode} (${session.voucher.downloaded ? 'Downloaded' : 'Generated'})` 
+        : 'No voucher';
+        
+      const sessionData = [
+        session.sessionCode,
+        new Date(session.createdAt).toLocaleDateString(),
+        session.completed ? "Completed" : "In Progress",
+        participantNames,
+        voucherStatus
+      ];
+      tableRows.push(sessionData);
+    });
+    
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [128, 0, 128] }
+    });
+    
+    doc.save("sessions-list.pdf");
+  };
 
   if (isLoading || isLoadingSessions) {
     return (
@@ -88,8 +210,42 @@ function ParticipantsList() {
   return (
     <div className="space-y-8">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle>Participants List</CardTitle>
+          <div className="flex flex-col sm:flex-row gap-2 items-center">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search participant..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value)}
+            >
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="Voucher Downloaded">Voucher Downloaded</SelectItem>
+                <SelectItem value="Voucher Generated">Voucher Generated</SelectItem>
+                <SelectItem value="No Voucher">No Voucher</SelectItem>
+                <SelectItem value="Not Submitted">Not Submitted</SelectItem>
+                <SelectItem value="Waiting for Partner">Waiting for Partner</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              onClick={exportParticipantsToPDF}
+              className="flex items-center gap-1">
+              <Download className="h-4 w-4" /> Export
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="px-2">
           <Table>
@@ -151,8 +307,25 @@ function ParticipantsList() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle>Sessions with Participants</CardTitle>
+          <div className="flex flex-col sm:flex-row gap-2 items-center">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search session code..."
+                className="pl-8"
+                value={sessionSearch}
+                onChange={(e) => setSessionSearch(e.target.value)}
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={exportSessionsToPDF}
+              className="flex items-center gap-1">
+              <Download className="h-4 w-4" /> Export
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="px-2">
           <Table>
