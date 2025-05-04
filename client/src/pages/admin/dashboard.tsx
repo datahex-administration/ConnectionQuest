@@ -59,12 +59,12 @@ export default function AdminDashboard() {
         setAnalytics(analyticsData);
         
         // Fetch participants data
-        const participantsResponse = await fetch("/api/admin/participants");
+        const participantsResponse = await fetch("/api/admin/participants?limit=5");
         if (!participantsResponse.ok) {
           throw new Error("Failed to fetch participants data");
         }
         const participantsData = await participantsResponse.json();
-        setParticipants(participantsData);
+        setParticipants(participantsData.participants || []);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
         toast({
@@ -175,14 +175,24 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-4">
                 <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/admin/questions")}
-                  className="text-sm"
-                >
-                  Manage Questions
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/admin/questions")}
+                    className="text-sm"
+                  >
+                    Manage Questions
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/admin/participants")}
+                    className="text-sm"
+                  >
+                    View Participants & Sessions
+                  </Button>
+                </div>
               </div>
               <Button 
                 onClick={handleLogout}
