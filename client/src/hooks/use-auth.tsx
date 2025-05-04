@@ -90,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest("POST", "/api/logout", {});
     },
     onSuccess: () => {
+      // Clear the auth token
+      localStorage.removeItem('mawadha_auth_token');
+      
       queryClient.setQueryData(["/api/user"], null);
       toast({
         title: "Logged out",
