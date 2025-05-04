@@ -1,5 +1,8 @@
 import { storage } from "./storage";
 import { nanoid } from "nanoid";
+import { db } from "@db";
+import { eq } from "drizzle-orm";
+import { gameSessions } from "@shared/schema";
 
 export interface GameQuestion {
   id: number;
