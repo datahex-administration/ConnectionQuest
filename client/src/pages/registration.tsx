@@ -21,7 +21,36 @@ const formSchema = z.object({
     required_error: "Please select your gender",
   }),
   age: z.coerce.number().min(18, "You must be at least 18 years old").max(100, "Age must be 100 or below"),
-  whatsappNumber: z.string().min(8, "Please enter a valid WhatsApp number with country code"),
+  whatsappNumber: z.string().refine(
+    (val) => {
+      // Validate country code first
+      const countryCodes = ["+971", "+966", "+973", "+974", "+965", "+968", "+91"];
+      const hasValidCode = countryCodes.some(code => val.startsWith(code));
+      if (!hasValidCode) return false;
+      
+      // Extract the part after country code
+      let number = "";
+      if (val.startsWith("+971")) number = val.substring(4); // UAE
+      else if (val.startsWith("+966")) number = val.substring(4); // KSA
+      else if (val.startsWith("+973")) number = val.substring(4); // Bahrain
+      else if (val.startsWith("+974")) number = val.substring(4); // Qatar
+      else if (val.startsWith("+965")) number = val.substring(4); // Kuwait
+      else if (val.startsWith("+968")) number = val.substring(4); // Oman
+      else if (val.startsWith("+91")) number = val.substring(3); // India
+      
+      // Validate the phone number based on country
+      if (val.startsWith("+971")) return /^\d{9}$/.test(number); // UAE: 9 digits
+      if (val.startsWith("+966")) return /^\d{9}$/.test(number); // KSA: 9 digits
+      if (val.startsWith("+973")) return /^\d{8}$/.test(number); // Bahrain: 8 digits
+      if (val.startsWith("+974")) return /^\d{8}$/.test(number); // Qatar: 8 digits
+      if (val.startsWith("+965")) return /^\d{8}$/.test(number); // Kuwait: 8 digits
+      if (val.startsWith("+968")) return /^\d{8}$/.test(number); // Oman: 8 digits
+      if (val.startsWith("+91")) return /^\d{10}$/.test(number); // India: 10 digits
+      
+      return false;
+    },
+    "Please enter a valid mobile number for the selected country"
+  ),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -145,7 +174,13 @@ export default function Registration() {
                     <FormItem>
                       <FormLabel>WhatsApp Number</FormLabel>
                       <div className="flex items-center space-x-2">
-                        <Select defaultValue="+971" onValueChange={val => setCountryCode(val)}>
+                        <Select defaultValue="+971" onValueChange={val => {
+                          setCountryCode(val);
+                          // Clear the phone number when country changes
+                          setPhoneNumber("");
+                          // Set the form field with the new country code
+                          field.onChange(`${val}`);
+                        }}>
                           <SelectTrigger className="w-[110px]">
                             <SelectValue placeholder="Code" />
                           </SelectTrigger>
@@ -176,6 +211,15 @@ export default function Registration() {
                           />
                         </FormControl>
                       </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {countryCode === "+971" && "Format: 5XXXXXXXX (9 digits)"}
+                        {countryCode === "+966" && "Format: 5XXXXXXXX (9 digits)"}
+                        {countryCode === "+973" && "Format: XXXXXXXX (8 digits)"}
+                        {countryCode === "+974" && "Format: XXXXXXXX (8 digits)"}
+                        {countryCode === "+965" && "Format: XXXXXXXX (8 digits)"}
+                        {countryCode === "+968" && "Format: XXXXXXXX (8 digits)"}
+                        {countryCode === "+91" && "Format: XXXXXXXXXX (10 digits)"}
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -184,7 +228,7 @@ export default function Registration() {
                 <div className="flex justify-center pt-4">
                   <Button 
                     type="submit" 
-                    className="btn-primary text-white font-semibold py-3 px-8 rounded-full shadow-lg"
+                    className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? (
