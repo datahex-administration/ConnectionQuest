@@ -172,42 +172,52 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto mb-8">
         <Card>
           <CardContent className="pt-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-4">
-                <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/admin/questions")}
-                    className="text-sm"
-                  >
-                    Manage Questions
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/admin/participants")}
-                    className="text-sm"
-                  >
-                    View Participants & Sessions
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/admin/settings")}
-                    className="text-sm"
-                  >
-                    Site Settings
-                  </Button>
-                </div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-primary mb-3 md:mb-0">Admin Dashboard</h2>
               </div>
-              <Button 
-                onClick={handleLogout}
-                className="text-sm text-primary bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20"
-              >
-                Logout
-              </Button>
+              
+              <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/questions")}
+                  className="text-xs sm:text-sm flex-grow md:flex-grow-0"
+                >
+                  Questions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/participants")}
+                  className="text-xs sm:text-sm flex-grow md:flex-grow-0"
+                >
+                  Participants
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/coupon-templates")}
+                  className="text-xs sm:text-sm flex-grow md:flex-grow-0"
+                >
+                  Coupons
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/settings")}
+                  className="text-xs sm:text-sm flex-grow md:flex-grow-0"
+                >
+                  Settings
+                </Button>
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="text-xs sm:text-sm flex-grow md:flex-grow-0 text-red-500 border-red-200 hover:bg-red-50"
+                >
+                  Logout
+                </Button>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

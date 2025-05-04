@@ -41,51 +41,73 @@ export default function Welcome() {
     <div className="animate-fade-in">
       <Header />
       
-      <div className="container px-4 py-8 md:py-12 mx-auto max-w-4xl">
-        <div className="flex flex-col lg:flex-row items-center gap-8">
-          {/* Left side content */}
-          <div className="text-center lg:text-left flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Compatibility Challenge
-            </h1>
-            <p className="text-lg text-gray-600 mb-6">
-              Discover how well you know your partner through our fun compatibility
-              game and win exclusive vouchers together!
-            </p>
+      {/* Hero section with background gradient */}
+      <div className="bg-gradient-to-b from-primary/10 to-secondary py-8 md:py-16">
+        <div className="container px-4 mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            {/* Left side content */}
+            <div className="text-center md:text-left md:max-w-md lg:max-w-xl">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4">
+                Compatibility Challenge
+              </h1>
+              <p className="text-lg text-gray-700 mb-6">
+                Discover how well you know your partner through our fun compatibility
+                game and win exclusive vouchers together!
+              </p>
+              
+              <Link href="/register">
+                <Button 
+                  size="lg" 
+                  className="btn-primary text-white font-semibold py-4 px-8 rounded-full shadow-lg text-lg"
+                >
+                  Let's Get Started
+                </Button>
+              </Link>
+            </div>
             
-            <Link href="/register">
-              <Button 
-                size="lg" 
-                className="btn-primary text-white font-semibold py-4 px-8 rounded-full shadow-lg text-lg"
-              >
-                Let's Get Started
-              </Button>
-            </Link>
-          </div>
-          
-          {/* Right side image - only shown on larger screens or after content on mobile */}
-          <div className="lg:flex-1 w-full max-w-md mx-auto lg:mx-0 mt-8 lg:mt-0">
-            <div className="relative rounded-lg shadow-xl overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1525879000488-bff3b1c387cf" 
-                alt="Couple Compatibility" 
-                className="w-full h-auto rounded-lg hover:scale-105 transition-transform duration-300"
-              />
+            {/* Right side banner - responsive for mobile and desktop */}
+            <div className="w-full md:w-1/2 lg:w-2/5 mt-8 md:mt-0">
+              <div className="relative rounded-lg shadow-xl overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1515169067868-5387ec356754?q=80&w=1000" 
+                  alt="Compatibility Challenge" 
+                  className="w-full h-auto rounded-lg object-cover hover:scale-105 transition-transform duration-300"
+                  style={{aspectRatio: "16/9"}}
+                />
+              </div>
             </div>
           </div>
         </div>
-        
-        {/* Mobile-only CTA button for immediate visibility without scrolling */}
-        <div className="fixed bottom-8 left-0 right-0 text-center z-10 lg:hidden px-4">
-          <Link href="/register">
-            <Button 
-              size="lg" 
-              className="w-full btn-primary text-white font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow"
-            >
-              Start Now!
-            </Button>
-          </Link>
+      </div>
+      
+      {/* Features section */}
+      <div className="container px-4 py-12 mx-auto max-w-6xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
+            <div className="text-primary text-3xl font-bold mb-2">Play Together</div>
+            <p className="text-gray-600">Answer questions with your partner and discover your compatibility.</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
+            <div className="text-primary text-3xl font-bold mb-2">Match Up</div>
+            <p className="text-gray-600">See how well your answers align and learn more about each other.</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
+            <div className="text-primary text-3xl font-bold mb-2">Win Rewards</div>
+            <p className="text-gray-600">Get exclusive vouchers based on your compatibility score.</p>
+          </div>
         </div>
+      </div>
+      
+      {/* Mobile-only CTA button for immediate visibility without scrolling */}
+      <div className="fixed bottom-8 left-0 right-0 text-center z-10 md:hidden px-4">
+        <Link href="/register">
+          <Button 
+            size="lg" 
+            className="w-full btn-primary text-white font-semibold py-4 px-8 rounded-full shadow-lg text-lg animate-pulse-slow"
+          >
+            Start Now!
+          </Button>
+        </Link>
       </div>
       
       <Footer />
