@@ -21,8 +21,8 @@ export const gameSessions = pgTable("game_sessions", {
 });
 
 export const sessionParticipants = pgTable("session_participants", {
-  sessionId: integer("session_id").references(() => gameSessions.id),
-  userId: integer("user_id").references(() => users.id),
+  sessionId: integer("session_id").references(() => gameSessions.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => ({
   pk: primaryKey(t.sessionId, t.userId),

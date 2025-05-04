@@ -17,6 +17,7 @@ import { gameService } from "./game-service";
 import { 
   insertUserSchema, 
   adminLoginSchema,
+  updateSettingsSchema,
 } from "@shared/schema";
 import { db } from "@db";
 

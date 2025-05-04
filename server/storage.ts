@@ -7,12 +7,15 @@ import {
   questionOptions, 
   userAnswers, 
   vouchers,
+  settings,
   User,
   GameSession,
   Question,
   QuestionOption,
   UserAnswer,
-  Voucher
+  Voucher,
+  Settings,
+  SettingsUpdate
 } from "@shared/schema";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 
@@ -308,6 +311,58 @@ export const storage = {
     );
 
     return sessionsWithVouchers;
+  },
+
+  // Settings operations
+  async getSettings(): Promise<Settings> {
+    // Get first settings record or create default if none exists
+    const existingSettings = await db.query.settings.findFirst();
+    
+    if (existingSettings) {
+      return existingSettings;
+    }
+    
+    // Create default settings if none exist
+    const [defaultSettings] = await db.insert(settings).values({
+      primaryColor: "#8e2c8e",
+      secondaryColor: "#d4a5d4",
+    }).returning();
+    
+    return defaultSettings;
+  },
+  
+  async updateSettings(settingsData: SettingsUpdate): Promise<Settings> {
+    // Get current settings
+    const currentSettings = await this.getSettings();
+    
+    // Update only the fields that are provided
+    const updateData: Partial<Settings> = {};
+    if (settingsData.privacyPolicyUrl !== undefined) {
+      updateData.privacyPolicyUrl = settingsData.privacyPolicyUrl;
+    }
+    if (settingsData.termsAndConditionsUrl !== undefined) {
+      updateData.termsAndConditionsUrl = settingsData.termsAndConditionsUrl;
+    }
+    if (settingsData.logoUrl !== undefined) {
+      updateData.logoUrl = settingsData.logoUrl;
+    }
+    if (settingsData.primaryColor !== undefined) {
+      updateData.primaryColor = settingsData.primaryColor;
+    }
+    if (settingsData.secondaryColor !== undefined) {
+      updateData.secondaryColor = settingsData.secondaryColor;
+    }
+    
+    // Update timestamp
+    updateData.updatedAt = new Date();
+    
+    // Update the settings in the database
+    const [updatedSettings] = await db.update(settings)
+      .set(updateData)
+      .where(eq(settings.id, currentSettings.id))
+      .returning();
+    
+    return updatedSettings;
   },
 
   async getRecentParticipants(limit: number = 10, offset: number = 0): Promise<(User & { matchStatus: string; sessionCode?: string; voucherCode?: string })[]> {
