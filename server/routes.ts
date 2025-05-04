@@ -586,6 +586,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Settings Management Routes
+  app.get("/api/admin/settings", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const settings = await storage.getSettings();
+      return res.status(200).json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      return res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/admin/settings", requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const settingsData = req.body;
+      const parsedSettings = updateSettingsSchema.parse(settingsData);
+      
+      const updatedSettings = await storage.updateSettings(parsedSettings);
+      return res.status(200).json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      return res.status(500).json({ error: "Failed to update settings" });
+    }
+  });
+
+  // Public settings route (no auth required)
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      return res.status(200).json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      return res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
   return httpServer;

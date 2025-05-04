@@ -62,6 +62,16 @@ export const vouchers = pgTable("vouchers", {
   downloaded: boolean("downloaded").default(false),
 });
 
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  privacyPolicyUrl: text("privacy_policy_url"),
+  termsAndConditionsUrl: text("terms_and_conditions_url"),
+  logoUrl: text("logo_url"),
+  primaryColor: text("primary_color").default("#8e2c8e").notNull(),
+  secondaryColor: text("secondary_color").default("#d4a5d4").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relationships
 export const gameSessionsRelations = relations(gameSessions, ({ many }) => ({
   participants: many(sessionParticipants),
@@ -135,6 +145,14 @@ export const insertQuestionSchema = createInsertSchema(questions);
 export const insertQuestionOptionSchema = createInsertSchema(questionOptions);
 export const insertUserAnswerSchema = createInsertSchema(userAnswers);
 export const insertVoucherSchema = createInsertSchema(vouchers);
+export const insertSettingsSchema = createInsertSchema(settings);
+export const updateSettingsSchema = z.object({
+  privacyPolicyUrl: z.string().url("Must be a valid URL").optional().nullable(),
+  termsAndConditionsUrl: z.string().url("Must be a valid URL").optional().nullable(),
+  logoUrl: z.string().optional().nullable(),
+  primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i, "Must be a valid hex color").optional(),
+  secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i, "Must be a valid hex color").optional(),
+});
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -148,6 +166,8 @@ export type Question = typeof questions.$inferSelect;
 export type QuestionOption = typeof questionOptions.$inferSelect;
 export type UserAnswer = typeof userAnswers.$inferSelect;
 export type Voucher = typeof vouchers.$inferSelect;
+export type Settings = typeof settings.$inferSelect;
+export type SettingsUpdate = z.infer<typeof updateSettingsSchema>;
 
 // Admin Login schema (not stored in database)
 export const adminLoginSchema = z.object({
