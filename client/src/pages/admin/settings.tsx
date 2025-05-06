@@ -193,43 +193,15 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Logo Upload */}
-              <div className="space-y-4">
-                <div className="font-medium">Logo</div>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  {logoPreview && (
-                    <div className="relative w-32 h-32 border rounded overflow-hidden flex items-center justify-center bg-background">
-                      <img 
-                        src={logoPreview?.startsWith("data:") ? logoPreview : getLogoUrl(logoPreview)} 
-                        alt="Logo preview" 
-                        className="max-w-full max-h-full object-contain" 
-                        onError={(e) => {
-                          // Log error and set a fallback image
-                          console.error('Error loading logo preview:', logoPreview);
-                          e.currentTarget.src = '/placeholder-image.png';
-                        }}
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      id="logo-upload"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                    <label htmlFor="logo-upload" className="cursor-pointer">
-                      <div className="flex items-center gap-2 p-2 border border-dashed rounded hover:bg-accent w-fit">
-                        <Upload className="h-4 w-4" />
-                        <span>{logoFile ? logoFile.name : "Upload logo"}</span>
-                      </div>
-                    </label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Recommended size: 200x200 pixels. Max file size: 2MB.
-                    </p>
-                  </div>
+              {/* Note about logo */}
+              <div className="rounded-md bg-muted p-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-primary" />
+                  <p className="font-medium">Mawadha Logo</p>
                 </div>
+                <p className="mt-2 text-muted-foreground">
+                  The Mawadha logo is now managed automatically through the system.
+                </p>
               </div>
 
               {/* Logo URL (hidden field, updated by the file upload) */}
