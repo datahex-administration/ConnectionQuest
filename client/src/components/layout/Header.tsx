@@ -49,8 +49,8 @@ export function Header() {
             </div>
           )}
         </div>
-        <h1 className="text-3xl font-bold text-primary mt-2">Mawadha</h1>
-        <p className="text-sm text-primary/80 italic">Be a better half</p>
+        <h1 className="text-3xl font-bold text-[#b1208e] mt-2">Mawadha</h1>
+        <p className="text-sm text-[#b1208e]/80 italic">Be a better half</p>
       </div>
     </header>
   );

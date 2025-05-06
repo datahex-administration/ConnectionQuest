@@ -103,7 +103,7 @@ export default function Registration() {
       <div className="max-w-md mx-auto">
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-2xl font-bold text-primary text-center mb-6">Player Registration</h2>
+            <h2 className="text-2xl font-bold text-[#b1208e] text-center mb-6">Player Registration</h2>
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -227,7 +227,7 @@ export default function Registration() {
                 <div className="flex justify-center pt-4">
                   <Button 
                     type="submit" 
-                    className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
+                    className="bg-[#b1208e] hover:bg-[#9c1c7e] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? (

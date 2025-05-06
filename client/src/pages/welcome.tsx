@@ -52,7 +52,7 @@ export default function Welcome() {
             
             {/* Main content */}
             <div className="max-w-lg">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 animate-fade-in">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#b1208e] mb-4 animate-fade-in">
                 Compatibility Challenge
               </h1>
               <p className="text-lg md:text-xl text-gray-700 mb-8 animate-slide-up">
@@ -63,7 +63,7 @@ export default function Welcome() {
                 <Link href="/register">
                   <Button 
                     size="lg" 
-                    className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg md:text-xl bg-[#8e2c8e] hover:bg-[#742374] text-white"
+                    className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg md:text-xl bg-[#b1208e] hover:bg-[#9c1c7e] text-white"
                   >
                     Start Now
                   </Button>
