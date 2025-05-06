@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -31,13 +31,26 @@ export function useGameSession({ redirectIfNoUser = true }: UseGameSessionProps 
   };
 
   // Check if a user has already completed a session
+  // Adding a cache to avoid repeated calls for the same session code
+  const sessionStatusCache = useRef<Record<string, boolean>>({});
+  
   const checkUserSessionStatus = async (sessionCode: string): Promise<boolean> => {
     if (!user?.id) return false;
+    
+    // Check if we already have a cached result for this session code
+    if (sessionStatusCache.current[sessionCode] !== undefined) {
+      return sessionStatusCache.current[sessionCode];
+    }
     
     try {
       const response = await fetch(`/api/sessions/${sessionCode}/user-status?userId=${user.id}`);
       const data = await response.json();
-      return data.hasSubmitted || false;
+      const hasSubmitted = data.hasSubmitted || false;
+      
+      // Cache the result for future checks
+      sessionStatusCache.current[sessionCode] = hasSubmitted;
+      
+      return hasSubmitted;
     } catch (error) {
       console.error("Error checking session status:", error);
       return false;

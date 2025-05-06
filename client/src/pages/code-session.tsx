@@ -112,23 +112,6 @@ export default function CodeSession() {
     setIsJoining(true);
     
     try {
-      // First, check if the user has already submitted answers for this session
-      try {
-        const hasSubmitted = await checkUserSessionStatus(partnerCode);
-        if (hasSubmitted) {
-          // If user has already submitted answers, redirect to results page
-          toast({
-            title: "Already Submitted",
-            description: "You've already submitted answers for this session. Redirecting to results.",
-          });
-          navigate(`/results/${partnerCode}`);
-          return;
-        }
-      } catch (statusError) {
-        console.error("Error checking submission status:", statusError);
-        // Continue with join attempt even if status check fails
-      }
-      
       // Ensure auth token is available before joining
       const authToken = localStorage.getItem('mawadha_auth_token');
       if (!authToken) {
@@ -180,20 +163,9 @@ export default function CodeSession() {
     // Ensure we have both a session code and a logged-in user before starting
     if (sessionCode && user) {
       setCheckingStatus(true);
+      
+      // Simply navigate to the game page - the checking logic is now handled in the game component
       try {
-        // Check if the user has already submitted answers for this session
-        const hasSubmitted = await checkUserSessionStatus(sessionCode);
-        
-        if (hasSubmitted) {
-          // If user has already submitted answers, redirect to results page
-          toast({
-            title: "Already Submitted",
-            description: "You've already submitted answers for this session. Redirecting to results.",
-          });
-          navigate(`/results/${sessionCode}`);
-          return;
-        }
-        
         // Before navigating, ensure authentication is valid
         const authToken = localStorage.getItem('mawadha_auth_token');
         if (!authToken) {
@@ -202,8 +174,8 @@ export default function CodeSession() {
         }
         navigate(`/game/${sessionCode}`);
       } catch (error) {
-        console.error("Error checking submission status:", error);
-        // If there's an error checking status, proceed to game anyway
+        console.error("Error navigating to game:", error);
+        // If there's an error, proceed to game anyway
         navigate(`/game/${sessionCode}`);
       } finally {
         setCheckingStatus(false);
