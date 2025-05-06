@@ -20,7 +20,7 @@ const formSchema = z.object({
   gender: z.enum(["male", "female"], {
     required_error: "Please select your gender",
   }),
-  age: z.coerce.number(), // Only check that it's a number
+  age: z.string().refine(val => /^\d+$/.test(val), "Age must be a number"), // Only check that it consists of digits
   whatsappNumber: z.string().refine(
     (val) => {
       // Validate country code first
@@ -68,7 +68,7 @@ export default function Registration() {
     defaultValues: {
       name: "",
       gender: "male", // Default to male selection
-      age: 18, // Default to minimum age
+      age: "18", // Default to minimum age as string
       whatsappNumber: "+971", // Default to UAE code
     },
   });
@@ -82,7 +82,12 @@ export default function Registration() {
 
   // Handle form submission
   function onSubmit(values: FormValues) {
-    registerMutation.mutate(values, {
+    // Convert age to number for API call
+    const formattedValues = {
+      ...values,
+      age: parseInt(values.age, 10) || 0
+    };
+    registerMutation.mutate(formattedValues, {
       onSuccess: () => {
         toast({
           title: "Registration Successful",
@@ -151,14 +156,13 @@ export default function Registration() {
                       <FormLabel>Age</FormLabel>
                       <FormControl>
                         <Input 
-                          type="number" 
-                          min={18} 
-                          max={100} 
+                          type="text" 
                           placeholder="Enter your age"
                           {...field}
                           onChange={(e) => {
-                            const value = e.target.value === "" ? undefined : parseInt(e.target.value, 10);
-                            field.onChange(value);
+                            // Only allow digits
+                            const onlyDigits = e.target.value.replace(/\D/g, '');
+                            field.onChange(onlyDigits);
                           }}
                         />
                       </FormControl>
