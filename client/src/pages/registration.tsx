@@ -20,7 +20,7 @@ const formSchema = z.object({
   gender: z.enum(["male", "female"], {
     required_error: "Please select your gender",
   }),
-  age: z.coerce.number().min(18, "You must be at least 18 years old").max(100, "Age must be 100 or below"),
+  age: z.coerce.number().int("Age must be a whole number").nonnegative("Age cannot be negative"),
   whatsappNumber: z.string().refine(
     (val) => {
       // Validate country code first
@@ -152,8 +152,7 @@ export default function Registration() {
                       <FormControl>
                         <Input 
                           type="number" 
-                          min={18} 
-                          max={100} 
+                          min={0}
                           placeholder="Enter your age"
                           {...field}
                           onChange={(e) => {

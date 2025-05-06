@@ -42,7 +42,7 @@ export default function Welcome() {
       <Header />
       
       {/* Hero section with background gradient */}
-      <div className="bg-gradient-to-b from-primary/10 to-secondary py-6 md:py-10">
+      <div className="bg-gradient-to-b from-[#b1208e]/10 to-[#b1208e]/20 py-6 md:py-10">
         <div className="container px-3 mx-auto max-w-4xl">
           <div className="flex flex-col items-center justify-center text-center">
             {/* Enlarged logo area */}
