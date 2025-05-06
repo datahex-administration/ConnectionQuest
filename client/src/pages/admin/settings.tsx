@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Upload, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Info } from "lucide-react";
 import { getLogoUrl } from "@/lib/utils";
 import { useLocation } from "wouter";
 
@@ -31,9 +31,7 @@ const FormSchema = updateSettingsSchema;
 export default function SettingsPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [logoFile, setLogoFile] = React.useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
-
+  
   // Fetch current settings
   const { data: settings, isLoading } = useQuery<Settings>({
     queryKey: ["/api/admin/settings"],
@@ -44,63 +42,14 @@ export default function SettingsPage() {
     },
   });
 
-  // File upload handler
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Only accept image files
-    if (!file.type.startsWith("image/")) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload an image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLogoFile(file);
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setLogoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
   // Settings update mutation
   const mutation = useMutation({
     mutationFn: async (data: SettingsFormValues) => {
-      // If we have a logo file, upload it first
-      let logoUrl = data.logoUrl;
-
-      if (logoFile) {
-        const formData = new FormData();
-        formData.append("logo", logoFile);
-        
-        try {
-          const uploadRes = await fetch("/api/admin/upload/logo", {
-            method: "POST",
-            body: formData,
-          });
-          
-          if (!uploadRes.ok) {
-            throw new Error("Failed to upload logo");
-          }
-          
-          const uploadData = await uploadRes.json();
-          logoUrl = uploadData.url;
-        } catch (error) {
-          console.error("Error uploading logo:", error);
-          throw new Error("Failed to upload logo");
-        }
-      }
-
-      // Now update settings with all data including the new logo URL if applicable
+      // Update settings with the form data
       const res = await apiRequest("PUT", "/api/admin/settings", {
         ...data,
-        logoUrl,
+        // Keep the logoUrl field but don't modify it
+        logoUrl: data.logoUrl,
       });
       
       if (!res.ok) {
@@ -148,11 +97,6 @@ export default function SettingsPage() {
         primaryColor: settings.primaryColor || "#8e2c8e",
         secondaryColor: settings.secondaryColor || "#d4a5d4",
       });
-
-      // Set logo preview if logo URL exists
-      if (settings.logoUrl) {
-        setLogoPreview(settings.logoUrl);
-      }
     }
   }, [settings, form]);
 
