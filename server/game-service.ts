@@ -44,10 +44,19 @@ export const gameService = {
     }
 
     const participants = await storage.getSessionParticipants(session.id);
+    
+    // Check if the user is already a participant in this session
+    const isUserAlreadyParticipant = participants.some(participant => participant.id === userId);
+    if (isUserAlreadyParticipant) {
+      return true; // User is already a participant, consider this a successful join
+    }
+    
+    // Check if the session is already full
     if (participants.length >= 2) {
       return false; // Session already full
     }
 
+    // Add the user to the session if not already a participant
     await storage.addParticipantToSession(session.id, userId);
     return true;
   },
