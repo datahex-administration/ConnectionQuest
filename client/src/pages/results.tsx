@@ -117,7 +117,7 @@ export default function Results() {
                     <h3 className="font-semibold text-primary mb-2">Matching Answers:</h3>
                     <ul className="list-disc list-inside text-gray-700 space-y-1">
                       {results.matchingAnswers.map((match, index) => (
-                        <li key={index}>You both {match.question.toLowerCase().includes("favorite") ? "love" : "chose"} {match.answer.toLowerCase()}</li>
+                        <li key={index}><span className="font-medium">{match.question}:</span> You both chose <span className="text-primary font-medium">{match.answer}</span></li>
                       ))}
                     </ul>
                   </div>
@@ -146,41 +146,45 @@ export default function Results() {
                 
                 {results?.voucher && (
                   <div className="mt-10">
-                    <div className="relative bg-gradient-to-b from-primary to-primary/70 p-6 rounded-lg shadow-lg max-w-md mx-auto transform transition-all duration-300 hover:scale-105">
+                    <div className="relative bg-gradient-to-br from-primary via-[#a235a2] to-[#8e2c8e] p-6 rounded-lg shadow-xl max-w-md mx-auto transform transition-all duration-300 hover:scale-105 overflow-hidden">
                       {/* Decorative elements */}
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mt-6 -mr-6"></div>
-                      <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -mb-4 -ml-4"></div>
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mt-8 -mr-8 blur-sm"></div>
+                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full -mb-6 -ml-6 blur-sm"></div>
+                      <div className="absolute bottom-20 right-4 w-12 h-12 bg-white/5 rounded-full blur-sm"></div>
+                      <div className="absolute top-20 left-4 w-16 h-16 bg-white/5 rounded-full blur-sm"></div>
                       
                       {/* Corner decorations */}
-                      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
-                      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
-                      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
-                      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
+                      <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-white/70"></div>
+                      <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-white/70"></div>
+                      <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-white/70"></div>
+                      <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-white/70"></div>
                       
                       <div className="relative z-10">
                         <div className="text-center">
-                          <div className="bg-white/20 text-white inline-block px-4 py-1 rounded-full text-sm font-medium mb-3">
+                          <div className="bg-white/20 backdrop-blur-sm text-white inline-block px-4 py-1 rounded-full text-sm font-medium mb-3">
                             <Gift className="inline-block w-4 h-4 mr-1" /> Congratulations!
                           </div>
                           
                           <h3 className="text-xl font-bold text-white mb-1">You've Earned a Voucher!</h3>
+                          <p className="text-white/90 text-sm mb-2">Match percentage: {results.matchPercentage}%</p>
                           
-                          <div className="my-5 py-2 border-t border-b border-white/30">
-                            <p className="text-white font-bold text-2xl tracking-wide">
+                          <div className="my-5 py-3 border-t border-b border-white/30 bg-white/5 backdrop-blur-sm rounded-md">
+                            <p className="text-white font-bold text-3xl tracking-wide">
                               {results.voucher.discount}
                             </p>
-                            <p className="text-white/90 uppercase tracking-widest text-sm">
-                              COUPLE'S DINNER
+                            <p className="text-white/90 uppercase tracking-widest text-sm font-medium mt-1">
+                              {results.voucher.discount.includes('%') ? 'DISCOUNT VOUCHER' : 'CASH VOUCHER'}
                             </p>
                           </div>
                           
-                          <div className="bg-white/10 rounded-lg p-3 mb-3">
+                          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-3 border border-white/10">
+                            <p className="text-xs text-white/80 mb-1">VOUCHER CODE</p>
                             <p className="text-white font-mono font-bold tracking-wider">
                               {results.voucher.voucherCode}
                             </p>
                           </div>
                           
-                          <p className="text-white/80 text-xs mb-4">
+                          <p className="text-white/90 text-xs mb-4 bg-white/10 rounded-full py-1 px-3 inline-block">
                             Valid until: {new Date(results.voucher.validUntil).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
