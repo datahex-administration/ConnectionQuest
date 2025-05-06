@@ -95,7 +95,7 @@ export default function Results() {
             ) : (
               <div>
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary text-white text-3xl font-bold shadow-lg" style={{ boxShadow: '0 0 15px rgba(142, 44, 142, 0.4)' }}>
+                  <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary text-green text-3xl font-bold shadow-lg" style={{ boxShadow: '0 0 15px rgba(142, 44, 142, 0.4)' }}>
                     <span className="text-4xl">{results?.matchPercentage || 0}<span className="text-xl align-top">%</span></span>
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800 mt-5">Compatibility Score</h2>
