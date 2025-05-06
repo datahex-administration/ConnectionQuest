@@ -48,7 +48,6 @@ export default function Welcome() {
             {/* Mawadha logo - Larger and more readable */}
             <div className="mb-8 flex flex-col items-center">
               <img src="/images/mawadha-logo.png" alt="Mawadha Logo" className="h-32 md:h-40 w-auto" />
-              <img src="/images/mawadha-letter.png" alt="Mawadha Text" className="h-12 md:h-16 w-auto mt-3" />
             </div>
 
             {/* Main content */}
