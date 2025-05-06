@@ -1,16 +1,21 @@
-import { MawadhaLogo } from "@/components/logo/MawadhaLogo";
-
 export function Header() {
   return (
     <header className="flex justify-center mb-6 pt-4">
       <div className="text-center">
-        <div className="h-20 mx-auto mb-2 relative">
-          <div className="flex justify-center items-center h-full">
-            <MawadhaLogo className="h-full" />
+        <div className="mx-auto mb-2 relative">
+          <div className="flex flex-col items-center">
+            <img 
+              src="/images/mawadha-icon.png" 
+              alt="Mawadha Logo" 
+              className="h-24 w-auto" 
+            />
+            <img 
+              src="/images/mawadha-text.png" 
+              alt="Mawadha Text" 
+              className="h-12 w-auto mt-1" 
+            />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-primary mt-2">Mawadha</h1>
-        <p className="text-sm text-primary/80 italic">Be a better half</p>
       </div>
     </header>
   );

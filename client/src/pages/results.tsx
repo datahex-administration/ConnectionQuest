@@ -95,19 +95,20 @@ export default function Results() {
             ) : (
               <div>
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary text-white text-3xl font-bold">
-                    <span>{results?.matchPercentage || 0}</span><span>%</span>
+                  <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary text-white text-3xl font-bold shadow-lg" style={{ boxShadow: '0 0 15px rgba(142, 44, 142, 0.4)' }}>
+                    <span className="text-4xl">{results?.matchPercentage || 0}<span className="text-xl align-top">%</span></span>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-4">Compatibility Score</h2>
-                  <p className="text-gray-600 mt-1">
-                    {results?.matchPercentage ? results.matchPercentage >= 80 
-                      ? "You and your partner are a perfect match!"
-                      : results.matchPercentage >= 60
-                        ? "You and your partner are a great match!"
-                        : results.matchPercentage >= 40
-                          ? "You and your partner have potential!"
-                          : "You and your partner have room to grow together!"
-                      : "No matching answers found"
+                  <h2 className="text-2xl font-bold text-gray-800 mt-5">Compatibility Score</h2>
+                  <p className="text-gray-600 mt-2">
+                    {results?.matchPercentage ? 
+                      results.matchPercentage >= 80 
+                        ? "You and your partner are a perfect match!"
+                        : results.matchPercentage >= 60
+                          ? "You and your partner are a great match!"
+                          : results.matchPercentage >= 40
+                            ? "You and your partner have potential!"
+                            : "You and your partner have room to grow together!"
+                        : "No matching answers found"
                     }
                   </p>
                 </div>
@@ -146,45 +147,61 @@ export default function Results() {
                 
                 {results?.voucher && (
                   <div className="mt-10">
-                    <div className="relative bg-gradient-to-br from-primary via-[#a235a2] to-[#8e2c8e] p-6 rounded-lg shadow-xl max-w-md mx-auto transform transition-all duration-300 hover:scale-105 overflow-hidden">
-                      {/* Decorative elements */}
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mt-8 -mr-8 blur-sm"></div>
-                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full -mb-6 -ml-6 blur-sm"></div>
-                      <div className="absolute bottom-20 right-4 w-12 h-12 bg-white/5 rounded-full blur-sm"></div>
-                      <div className="absolute top-20 left-4 w-16 h-16 bg-white/5 rounded-full blur-sm"></div>
+                    <div className="relative bg-gradient-to-br from-primary via-[#a235a2] to-[#8e2c8e] p-7 rounded-lg shadow-xl max-w-md mx-auto transform transition-all duration-300 hover:scale-105 overflow-hidden border border-white/20">
+                      {/* Improved decorative elements - larger and more vibrant */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/15 rounded-full -mt-10 -mr-10 blur-md"></div>
+                      <div className="absolute bottom-0 left-0 w-28 h-28 bg-white/15 rounded-full -mb-10 -ml-10 blur-md"></div>
+                      <div className="absolute bottom-24 right-6 w-16 h-16 bg-white/10 rounded-full blur-md"></div>
+                      <div className="absolute top-24 left-6 w-20 h-20 bg-white/10 rounded-full blur-md"></div>
+                      <div className="absolute top-1/2 right-1/3 w-10 h-10 bg-white/5 rounded-full blur-sm"></div>
+                      <div className="absolute bottom-1/3 left-1/4 w-12 h-12 bg-white/5 rounded-full blur-sm"></div>
                       
-                      {/* Corner decorations */}
-                      <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-white/70"></div>
-                      <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-white/70"></div>
-                      <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-white/70"></div>
-                      <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-white/70"></div>
+                      {/* Enhanced corner decorations */}
+                      <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-white/80"></div>
+                      <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-white/80"></div>
+                      <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-white/80"></div>
+                      <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-white/80"></div>
+                      
+                      {/* Diamond shape decoration - similar to the Mawadha logo */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-full h-full border-4 border-white/5 rounded-xl"></div>
                       
                       <div className="relative z-10">
                         <div className="text-center">
-                          <div className="bg-white/20 backdrop-blur-sm text-white inline-block px-4 py-1 rounded-full text-sm font-medium mb-3">
-                            <Gift className="inline-block w-4 h-4 mr-1" /> Congratulations!
+                          <div className="bg-white/20 backdrop-blur-sm text-white inline-block px-4 py-1.5 rounded-full text-sm font-medium mb-3 shadow-lg">
+                            <Gift className="inline-block w-4 h-4 mr-1" /> 
+                            Congratulations!
                           </div>
                           
-                          <h3 className="text-xl font-bold text-white mb-1">You've Earned a Voucher!</h3>
-                          <p className="text-white/90 text-sm mb-2">Match percentage: {results.matchPercentage}%</p>
+                          <h3 className="text-xl font-bold text-white mb-1 text-shadow">You've Earned a Voucher!</h3>
+                          <div className="flex items-center justify-center gap-2 mb-4">
+                            <div className="bg-white/20 rounded-full h-5 w-5 flex items-center justify-center">
+                              <HeartPulse className="h-3 w-3 text-white" />
+                            </div>
+                            <p className="text-white/90 text-sm">
+                              Match percentage: <span className="font-bold">{results.matchPercentage}%</span>
+                            </p>
+                            <div className="bg-white/20 rounded-full h-5 w-5 flex items-center justify-center">
+                              <HeartPulse className="h-3 w-3 text-white" />
+                            </div>
+                          </div>
                           
-                          <div className="my-5 py-3 border-t border-b border-white/30 bg-white/5 backdrop-blur-sm rounded-md">
-                            <p className="text-white font-bold text-3xl tracking-wide">
+                          <div className="my-5 py-4 border-t border-b border-white/40 bg-white/10 backdrop-blur-sm rounded-md shadow-inner">
+                            <p className="text-white font-bold text-4xl tracking-wide drop-shadow-md">
                               {results.voucher.discount}
                             </p>
-                            <p className="text-white/90 uppercase tracking-widest text-sm font-medium mt-1">
+                            <p className="text-white uppercase tracking-widest text-xs font-medium mt-1 letter-spacing-wide">
                               {results.voucher.discount.includes('%') ? 'DISCOUNT VOUCHER' : 'CASH VOUCHER'}
                             </p>
                           </div>
                           
-                          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-3 border border-white/10">
-                            <p className="text-xs text-white/80 mb-1">VOUCHER CODE</p>
-                            <p className="text-white font-mono font-bold tracking-wider">
+                          <div className="bg-white/10 backdrop-blur-md rounded-lg p-3.5 mb-3 border border-white/20 shadow-inner">
+                            <p className="text-xs text-white/80 mb-1 uppercase tracking-wider">VOUCHER CODE</p>
+                            <p className="text-white font-mono font-bold tracking-[0.2em] text-lg">
                               {results.voucher.voucherCode}
                             </p>
                           </div>
                           
-                          <p className="text-white/90 text-xs mb-4 bg-white/10 rounded-full py-1 px-3 inline-block">
+                          <p className="text-white/90 text-xs mb-4 bg-white/15 rounded-full py-1.5 px-4 inline-block shadow-sm">
                             Valid until: {new Date(results.voucher.validUntil).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',

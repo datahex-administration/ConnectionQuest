@@ -9,7 +9,7 @@ import { Loader2, Instagram, Youtube, Globe } from "lucide-react";
 export default function Welcome() {
   const { user, isLoading } = useAuth();
   const [, navigate] = useLocation();
-  
+
   // Redirect to code session if user is already logged in
   useEffect(() => {
     if (user) {
@@ -22,65 +22,78 @@ export default function Welcome() {
     return (
       <div className="animate-fade-in">
         <Header />
-        
+
         <div className="container mx-auto flex items-center justify-center min-h-[300px]">
           <div className="text-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
             <p className="text-gray-600">Loading...</p>
           </div>
         </div>
-        
+
         <Footer />
       </div>
     );
   }
-  
+
   // If logged in, redirect (handled by useEffect)
   if (user) return null;
   return (
     <div className="animate-fade-in">
       <Header />
-      
+
       {/* Hero section with background gradient */}
       <div className="bg-gradient-to-b from-primary/10 to-secondary py-6 md:py-10">
         <div className="container px-3 mx-auto max-w-4xl">
           <div className="flex flex-col items-center justify-center text-center">
             {/* Mawadha logo */}
-            <div className="mb-8">
-              <img src="/images/mawadha-logo.png" alt="Mawadha" className="h-36 md:h-48 mx-auto" />
-            </div>
-            
+
             {/* Main content */}
             <div className="max-w-lg">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 animate-fade-in">
                 Compatibility Challenge
               </h1>
               <p className="text-lg md:text-xl text-gray-700 mb-8 animate-slide-up">
-                Discover how well you know your partner and win exclusive vouchers together!
+                Discover how well you know your partner and win exclusive
+                vouchers together!
               </p>
-              
+
               <div className="mt-6 animate-fade-in">
                 <Link href="/register">
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="font-semibold py-4 px-8 rounded-full shadow-lg text-lg md:text-xl bg-[#8e2c8e] hover:bg-[#742374] text-white"
                   >
                     Start Now
                   </Button>
                 </Link>
               </div>
-              
+
               {/* Social Media Links */}
               <div className="mt-10 flex justify-center items-center space-x-5">
-                <a href="https://www.instagram.com/mawadhaofficial?utm_source=qr&igsh=bmgxNGl0MmpjYm92" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center">
+                <a
+                  href="https://www.instagram.com/mawadhaofficial?utm_source=qr&igsh=bmgxNGl0MmpjYm92"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center"
+                >
                   <Instagram className="w-6 h-6 mb-1" />
                   <span className="text-xs">Instagram</span>
                 </a>
-                <a href="https://youtube.com/@mawadhaofficial?si=TGKKepllEntj_gSy" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center">
+                <a
+                  href="https://youtube.com/@mawadhaofficial?si=TGKKepllEntj_gSy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center"
+                >
                   <Youtube className="w-6 h-6 mb-1" />
                   <span className="text-xs">YouTube</span>
                 </a>
-                <a href="https://www.mawadha.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center">
+                <a
+                  href="https://www.mawadha.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center"
+                >
                   <Globe className="w-6 h-6 mb-1" />
                   <span className="text-xs">Website</span>
                 </a>
@@ -89,7 +102,7 @@ export default function Welcome() {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
