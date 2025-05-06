@@ -43,8 +43,8 @@ export default function CodeSession() {
     // Initial check
     checkPartnerStatus();
 
-    // Set up polling interval
-    const intervalId = setInterval(checkPartnerStatus, 3000);
+    // Set up polling interval with longer delay to reduce load
+    const intervalId = setInterval(checkPartnerStatus, 8000);
     
     // Clean up interval on unmount
     return () => clearInterval(intervalId);

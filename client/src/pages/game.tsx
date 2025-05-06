@@ -135,8 +135,8 @@ export default function Game() {
     // Initial check
     checkResultsReady();
     
-    // Set up polling interval (every 3 seconds)
-    const intervalId = setInterval(checkResultsReady, 3000);
+    // Set up polling interval with longer delay to reduce load
+    const intervalId = setInterval(checkResultsReady, 8000);
     
     // Clean up interval on unmount
     return () => clearInterval(intervalId);
