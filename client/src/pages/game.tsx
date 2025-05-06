@@ -54,16 +54,21 @@ export default function Game() {
     loadQuestions();
   }, [sessionCode, userId, toast]);
   
-  // Check if the user has already submitted answers for this session
+  // Check if the user has already submitted answers for this session - only run once when component mounts
   useEffect(() => {
+    let isMounted = true;
+    let hasRunCheck = false; // Add a flag to track if we've already run the check
+    
     async function checkSubmissionStatus() {
-      if (!sessionCode || !userId) return;
+      if (!sessionCode || !userId || !isMounted || hasRunCheck) return;
+      
+      hasRunCheck = true; // Mark that we've run the check to prevent subsequent runs
       
       try {
         setIsCheckingSubmissionStatus(true);
         const hasAlreadySubmitted = await checkUserSessionStatus(sessionCode);
         
-        if (hasAlreadySubmitted) {
+        if (hasAlreadySubmitted && isMounted) {
           // If user has already submitted, set hasSubmitted to true and check if results are ready
           setHasSubmitted(true);
           
@@ -71,7 +76,7 @@ export default function Game() {
           const response = await fetch(`/api/sessions/${sessionCode}/results-status`);
           const data = await response.json();
           
-          if (data.ready) {
+          if (data.ready && isMounted) {
             // If results are ready, navigate to results page
             toast({
               title: "Results Ready",
@@ -84,12 +89,18 @@ export default function Game() {
         console.error("Error checking submission status:", error);
         // If there's an error checking status, continue with the game
       } finally {
-        setIsCheckingSubmissionStatus(false);
+        if (isMounted) {
+          setIsCheckingSubmissionStatus(false);
+        }
       }
     }
     
     checkSubmissionStatus();
-  }, [sessionCode, userId, navigate, toast, checkUserSessionStatus]);
+    
+    return () => {
+      isMounted = false; // Clean up to prevent state updates after unmount
+    };
+  }, [sessionCode, userId, navigate, toast, checkUserSessionStatus]); // Include dependencies but with isMounted guard to prevent over-polling
   
   const handleAnswerSelect = (questionId: number, optionIndex: number, answerText: string) => {
     // Create a copy of the answers map and update it
