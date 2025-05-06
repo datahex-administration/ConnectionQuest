@@ -5,6 +5,7 @@ import { z } from "zod";
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 // Declare session with custom properties
 declare module "express-session" {
@@ -84,6 +85,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
     })
   );
+  
+  // Serve static files from public directory
+  const publicPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
+  app.use(express.static(publicPath));
+  console.log('Serving static files from:', publicPath);
 
   // API Routes
   // User endpoints

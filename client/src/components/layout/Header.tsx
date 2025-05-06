@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { getLogoUrl } from "@/lib/utils";
 import { Settings } from "@shared/schema";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export function Header() {
   const { data: settings } = useQuery<Settings>({
@@ -13,6 +13,9 @@ export function Header() {
   
   const [logoError, setLogoError] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
+  
+  // Cache-busting timestamp for the local logo
+  const cacheBuster = useMemo(() => `?v=${Date.now()}`, []);
   
   // Update logo URL whenever settings change
   useEffect(() => {
