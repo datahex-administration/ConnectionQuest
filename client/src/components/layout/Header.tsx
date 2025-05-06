@@ -35,17 +35,17 @@ export function Header() {
   return (
     <header className="flex justify-center mb-6 pt-4">
       <div className="text-center">
-        <div className="h-20 mx-auto mb-2 relative">
+        <div className="h-24 w-24 mx-auto mb-2 relative">
           {logoUrl && !logoError ? (
             <img 
               src={logoUrl} 
               alt="Custom Logo" 
-              className="h-full mx-auto object-contain z-10 relative" 
+              className="h-full w-full mx-auto object-contain z-10 relative" 
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="flex justify-center items-center h-full">
-              <MawadhaLogo className="h-full" />
+            <div className="flex justify-center items-center h-full w-full">
+              <MawadhaLogo className="h-full w-full" />
             </div>
           )}
         </div>

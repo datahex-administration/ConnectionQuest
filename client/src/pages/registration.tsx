@@ -68,7 +68,7 @@ export default function Registration() {
     defaultValues: {
       name: "",
       gender: "male", // Default to male selection
-      age: 18, // Default to minimum age
+      age: undefined, // No default age value
       whatsappNumber: "+971", // Default to UAE code
     },
   });
@@ -154,7 +154,7 @@ export default function Registration() {
                           type="number" 
                           min={0}
                           placeholder="Enter your age"
-                          {...field}
+                          value={field.value === undefined ? "" : field.value}
                           onChange={(e) => {
                             const value = e.target.value === "" ? undefined : parseInt(e.target.value, 10);
                             field.onChange(value);
