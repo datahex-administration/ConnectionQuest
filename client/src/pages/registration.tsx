@@ -20,7 +20,7 @@ const formSchema = z.object({
   gender: z.enum(["male", "female"], {
     required_error: "Please select your gender",
   }),
-  age: z.coerce.number().int("Age must be a whole number").nonnegative("Age cannot be negative"),
+  age: z.coerce.number().min(18, "You must be at least 18 years old").max(100, "Age must be 100 or below"),
   whatsappNumber: z.string().refine(
     (val) => {
       // Validate country code first
@@ -68,7 +68,7 @@ export default function Registration() {
     defaultValues: {
       name: "",
       gender: "male", // Default to male selection
-      age: undefined, // No default age value
+      age: 18, // Default to minimum age
       whatsappNumber: "+971", // Default to UAE code
     },
   });
@@ -103,7 +103,7 @@ export default function Registration() {
       <div className="max-w-md mx-auto">
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-2xl font-bold text-[#b1208e] text-center mb-6">Player Registration</h2>
+            <h2 className="text-2xl font-bold text-primary text-center mb-6">Player Registration</h2>
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -152,9 +152,10 @@ export default function Registration() {
                       <FormControl>
                         <Input 
                           type="number" 
-                          min={0}
+                          min={18} 
+                          max={100} 
                           placeholder="Enter your age"
-                          value={field.value === undefined ? "" : field.value}
+                          {...field}
                           onChange={(e) => {
                             const value = e.target.value === "" ? undefined : parseInt(e.target.value, 10);
                             field.onChange(value);
@@ -227,7 +228,7 @@ export default function Registration() {
                 <div className="flex justify-center pt-4">
                   <Button 
                     type="submit" 
-                    className="bg-[#b1208e] hover:bg-[#9c1c7e] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
+                    className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-semibold py-3 px-8 rounded-full shadow-lg"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? (

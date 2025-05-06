@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { getLogoUrl } from "@/lib/utils";
 import { Settings } from "@shared/schema";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { data: settings } = useQuery<Settings>({
@@ -13,9 +13,6 @@ export function Header() {
   
   const [logoError, setLogoError] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
-  
-  // Cache-busting timestamp for the local logo
-  const cacheBuster = useMemo(() => `?v=${Date.now()}`, []);
   
   // Update logo URL whenever settings change
   useEffect(() => {
@@ -38,22 +35,22 @@ export function Header() {
   return (
     <header className="flex justify-center mb-6 pt-4">
       <div className="text-center">
-        <div className="h-24 w-24 mx-auto mb-2 relative">
+        <div className="h-20 mx-auto mb-2 relative">
           {logoUrl && !logoError ? (
             <img 
               src={logoUrl} 
               alt="Custom Logo" 
-              className="h-full w-full mx-auto object-contain z-10 relative" 
+              className="h-full mx-auto object-contain z-10 relative" 
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="flex justify-center items-center h-full w-full">
-              <MawadhaLogo className="h-full w-full" />
+            <div className="flex justify-center items-center h-full">
+              <MawadhaLogo className="h-full" />
             </div>
           )}
         </div>
-        <h1 className="text-3xl font-bold text-[#b1208e] mt-2">Mawadha</h1>
-        <p className="text-sm text-[#b1208e]/80 italic">Be a better half</p>
+        <h1 className="text-3xl font-bold text-primary mt-2">Mawadha</h1>
+        <p className="text-sm text-primary/80 italic">Be a better half</p>
       </div>
     </header>
   );

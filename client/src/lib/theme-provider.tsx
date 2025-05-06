@@ -8,8 +8,8 @@ type ThemeContextType = {
   secondaryColor: string;
 };
 
-const DEFAULT_PRIMARY_COLOR = "#b1208e";
-const DEFAULT_SECONDARY_COLOR = "#e8a1d2";
+const DEFAULT_PRIMARY_COLOR = "#8e2c8e";
+const DEFAULT_SECONDARY_COLOR = "#f8bef8";
 
 const ThemeContext = createContext<ThemeContextType>({
   primaryColor: DEFAULT_PRIMARY_COLOR,

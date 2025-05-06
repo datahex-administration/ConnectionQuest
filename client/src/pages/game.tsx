@@ -25,7 +25,6 @@ export default function Game() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isCheckingSubmissionStatus, setIsCheckingSubmissionStatus] = useState(true);
-  const [questionsLoadAttempts, setQuestionsLoadAttempts] = useState(0);
 
   // Combined questions array for navigation
   const allQuestions = [...commonQuestions, ...individualQuestions];
@@ -38,26 +37,8 @@ export default function Game() {
       setIsLoading(true);
       try {
         const questions = await fetchGameQuestions(sessionCode);
-        
-        // Check if questions were loaded properly
-        if (questions.commonQuestions.length > 0 || questions.individualQuestions.length > 0) {
-          setCommonQuestions(questions.commonQuestions);
-          setIndividualQuestions(questions.individualQuestions);
-          // Reset attempt counter since we succeeded
-          setQuestionsLoadAttempts(0);
-        } else if (questionsLoadAttempts < 3) {
-          // Increment attempts counter if questions are empty
-          setQuestionsLoadAttempts(prev => prev + 1);
-          // Wait a second before retrying to avoid hammering the server
-          setTimeout(() => {
-            console.log('Retrying question load, attempt:', questionsLoadAttempts + 1);
-            loadQuestions();
-          }, 1500);
-          return; // Skip setting isLoading to false since we're retrying
-        } else {
-          // After 3 attempts, show error
-          throw new Error('Could not load questions after multiple attempts. Please refresh the page.');
-        }
+        setCommonQuestions(questions.commonQuestions);
+        setIndividualQuestions(questions.individualQuestions);
       } catch (error) {
         console.error("Error loading questions:", error);
         toast({
@@ -71,7 +52,7 @@ export default function Game() {
     };
     
     loadQuestions();
-  }, [sessionCode, userId, toast, questionsLoadAttempts]);
+  }, [sessionCode, userId, toast]);
   
   // Check if the user has already submitted answers for this session
   useEffect(() => {
@@ -154,8 +135,8 @@ export default function Game() {
     // Initial check
     checkResultsReady();
     
-    // Set up polling interval with longer delay to reduce load
-    const intervalId = setInterval(checkResultsReady, 8000);
+    // Set up polling interval (every 3 seconds)
+    const intervalId = setInterval(checkResultsReady, 3000);
     
     // Clean up interval on unmount
     return () => clearInterval(intervalId);
@@ -211,18 +192,9 @@ export default function Game() {
             <div className="h-24 bg-primary/10 rounded mb-4"></div>
             <div className="h-12 bg-primary/20 rounded w-1/2 mx-auto"></div>
           </div>
-          <div className="mt-6 text-gray-600">
-            <p className="mb-2">
-              {isCheckingSubmissionStatus 
-                ? "Checking submission status..." 
-                : questionsLoadAttempts > 0 
-                  ? `Loading questions (attempt ${questionsLoadAttempts} of 3)...` 
-                  : "Loading questions..."}
-            </p>
-            {questionsLoadAttempts > 0 && (
-              <p className="text-sm text-gray-500">Taking longer than expected, please wait...</p>
-            )}
-          </div>
+          <p className="mt-6 text-gray-600">
+            {isCheckingSubmissionStatus ? "Checking submission status..." : "Loading questions..."}
+          </p>
         </div>
         <Footer />
       </div>
