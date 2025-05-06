@@ -22,21 +22,38 @@ export default function CodeSession() {
   const { user, isLoading, logoutMutation } = useAuth();
   const { checkUserSessionStatus } = useGameSession();
   const [checkingStatus, setCheckingStatus] = useState(false);
+  const [partnerCheckAttempts, setPartnerCheckAttempts] = useState(0);
+  const [lastPollingTime, setLastPollingTime] = useState(0);
 
   // Poll for partner status if we have a session code
   useEffect(() => {
     if (!sessionCode) return;
 
     const checkPartnerStatus = async () => {
+      // Implement rate limiting - only check if enough time has passed since last check
+      const now = Date.now();
+      if (now - lastPollingTime < 5000 && partnerCheckAttempts > 0) {
+        return; // Don't check if it's been less than 5 seconds since last check
+      }
+      
+      setLastPollingTime(now);
+      
       try {
         const response = await apiRequest("GET", `/api/sessions/${sessionCode}/status`);
         const data = await response.json();
         if (data.ready) {
           setPartnerJoined(true);
+          // Reset attempts counter once partner joined
+          setPartnerCheckAttempts(0);
+        } else {
+          // Increment the check attempts counter
+          setPartnerCheckAttempts(prev => prev + 1);
         }
       } catch (error) {
         console.error("Error checking partner status:", error);
         // Don't show errors to the user for polling operations
+        // But increment attempt counter to track failures
+        setPartnerCheckAttempts(prev => prev + 1);
       }
     };
 
@@ -44,11 +61,13 @@ export default function CodeSession() {
     checkPartnerStatus();
 
     // Set up polling interval with longer delay to reduce load
-    const intervalId = setInterval(checkPartnerStatus, 8000);
+    // Use a longer interval if we've been checking for a while
+    const interval = partnerCheckAttempts > 10 ? 10000 : 8000;
+    const intervalId = setInterval(checkPartnerStatus, interval);
     
     // Clean up interval on unmount
     return () => clearInterval(intervalId);
-  }, [sessionCode]);
+  }, [sessionCode, partnerCheckAttempts, lastPollingTime]);
 
   const generateCode = async () => {
     if (!user) {
@@ -327,6 +346,9 @@ export default function CodeSession() {
                       <Heart className="h-10 w-10 text-primary" />
                     </div>
                     <p className="text-gray-600 mt-2">Waiting for your partner to join...</p>
+                    {partnerCheckAttempts > 5 && (
+                      <p className="text-sm text-gray-500 mt-2">This might take a few moments. Please be patient.</p>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-4">
