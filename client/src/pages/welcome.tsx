@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Instagram, Youtube, Globe } from "lucide-react";
 
 export default function Welcome() {
   const { user, isLoading } = useAuth();
@@ -45,9 +45,9 @@ export default function Welcome() {
       <div className="bg-gradient-to-b from-primary/10 to-secondary py-6 md:py-10">
         <div className="container px-3 mx-auto max-w-4xl">
           <div className="flex flex-col items-center justify-center text-center">
-            {/* Enlarged logo area */}
-            <div className="mb-6 transform scale-125">
-              {/* Logo is already shown in Header */}
+            {/* Mawadha logo */}
+            <div className="mb-8 transform scale-125">
+              <img src="/images/mawadha-logo.png" alt="Mawadha" className="h-36 md:h-40 mx-auto" />
             </div>
             
             {/* Main content */}
@@ -69,12 +69,26 @@ export default function Welcome() {
                   </Button>
                 </Link>
               </div>
+              
+              {/* Social Media Links */}
+              <div className="mt-10 flex justify-center items-center space-x-5">
+                <a href="https://www.instagram.com/mawadhaofficial?utm_source=qr&igsh=bmgxNGl0MmpjYm92" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center">
+                  <Instagram className="w-6 h-6 mb-1" />
+                  <span className="text-xs">Instagram</span>
+                </a>
+                <a href="https://youtube.com/@mawadhaofficial?si=TGKKepllEntj_gSy" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center">
+                  <Youtube className="w-6 h-6 mb-1" />
+                  <span className="text-xs">YouTube</span>
+                </a>
+                <a href="https://www.mawadha.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors duration-200 flex flex-col items-center">
+                  <Globe className="w-6 h-6 mb-1" />
+                  <span className="text-xs">Website</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* No floating button needed anymore since we have a prominent center button */}
       
       <Footer />
     </div>
