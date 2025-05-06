@@ -257,7 +257,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (joinError) {
         console.error('Join operation error:', joinError);
         // If this is a duplicate key error (user already in session), consider it successful
-        if (joinError.code === '23505' && joinError.constraint === 'session_participants_session_id_user_id_pk') {
+        // Check if this is a duplicate key error (user already in session)
+        if (joinError && typeof joinError === 'object' && 'code' in joinError && 'constraint' in joinError &&
+            joinError.code === '23505' && joinError.constraint === 'session_participants_session_id_user_id_pk') {
           // Get the user data and return success
           const user = await storage.getUserById(userId);
           if (!user) {

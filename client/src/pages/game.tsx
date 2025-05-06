@@ -228,7 +228,16 @@ export default function Game() {
                 </div>
                 <h2 className="text-xl font-semibold text-primary mb-2">Answers Submitted!</h2>
                 <p className="text-gray-600 mb-6">Waiting for your partner to complete the questionnaire...</p>
-                <p className="text-sm text-gray-500">You'll automatically be redirected to see your results once your partner submits their answers.</p>
+                <p className="text-sm text-gray-500 mb-8">You'll automatically be redirected to see your results once your partner submits their answers.</p>
+                
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-md">
+                  <Button 
+                    onClick={() => window.location.reload()}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg mx-auto"
+                  >
+                    Refresh Status
+                  </Button>
+                </div>
               </div>
             ) : (
               <>
@@ -265,7 +274,7 @@ export default function Game() {
                   </div>
                 )}
                 
-                <div className="flex justify-between mt-8">
+                <div className="flex justify-between mt-8 mb-4 sticky bottom-0 bg-white p-4 border-t border-gray-100 shadow-md rounded-b-lg">
                   <Button 
                     onClick={goToPreviousQuestion}
                     className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg"
@@ -277,7 +286,7 @@ export default function Game() {
                   {currentQuestionIndex < allQuestions.length - 1 ? (
                     <Button 
                       onClick={goToNextQuestion}
-                      className="btn-primary text-white font-medium py-2 px-4 rounded-lg"
+                      className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-medium py-2 px-6 rounded-lg"
                       disabled={!answers.has(currentQuestion?.id)}
                     >
                       Next
@@ -285,7 +294,7 @@ export default function Game() {
                   ) : (
                     <Button 
                       onClick={handleSubmit}
-                      className="btn-primary text-white font-medium py-2 px-4 rounded-lg"
+                      className="bg-[#8e2c8e] hover:bg-[#742374] text-white font-medium py-2 px-6 rounded-lg"
                       disabled={isSubmitting || !answers.has(currentQuestion?.id)}
                     >
                       {isSubmitting ? "Submitting..." : "Submit Answers"}
