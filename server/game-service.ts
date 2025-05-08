@@ -116,36 +116,51 @@ export const gameService = {
   },
 
   async calculateMatches(sessionCode: string): Promise<MatchResult | null> {
+    console.log(`Calculating matches for session: ${sessionCode}`);
+    
     const session = await storage.getGameSessionByCode(sessionCode);
     if (!session) {
+      console.log("Session not found");
       return null;
     }
 
     const participants = await storage.getSessionParticipants(session.id);
     if (participants.length !== 2) {
+      console.log(`Invalid number of participants: ${participants.length}`);
       return null; // Need exactly 2 participants
     }
 
     // Get all session answers with related data
     const sessionAnswers = await storage.getSessionAnswers(session.id);
+    console.log(`Found ${sessionAnswers.length} total answers for session ID ${session.id}`);
     
     // Get all questions
     const allQuestions = await storage.getQuestions();
     const commonQuestions = allQuestions.filter(q => q.questionType === "common");
     const commonQuestionIds = new Set(commonQuestions.map(q => q.id));
+    console.log(`Found ${commonQuestions.length} common questions`);
     
     // First user ID to use as reference for "your" vs "partner's" answers
     const userId1 = participants[0].id;
     const userId2 = participants[1].id;
+    console.log(`Comparing answers between users: ${userId1} and ${userId2}`);
     
     // Create maps for each participant's answers
     const user1Answers = new Map<number, { questionText: string, answerText: string }>();
     const user2Answers = new Map<number, { questionText: string, answerText: string }>();
     
-    // Fill the maps with relevant answers
+    // Debug answers
+    sessionAnswers.forEach(answer => {
+      console.log(`Answer from user ${answer.userId} for question ${answer.questionId}: "${answer.question.text}" - "${answer.selectedOption.optionText}"`);
+    });
+    
+    // Fill the maps with relevant answers (only common questions)
     sessionAnswers.forEach(answer => {
       // Only consider common questions
-      if (!commonQuestionIds.has(answer.questionId)) return;
+      if (!commonQuestionIds.has(answer.questionId)) {
+        console.log(`Skipping individual question ${answer.questionId}`);
+        return;
+      }
       
       const answerInfo = {
         questionText: answer.question.text,
@@ -154,10 +169,14 @@ export const gameService = {
       
       if (answer.userId === userId1) {
         user1Answers.set(answer.questionId, answerInfo);
+        console.log(`User 1 answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
       } else if (answer.userId === userId2) {
         user2Answers.set(answer.questionId, answerInfo);
+        console.log(`User 2 answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
       }
     });
+    
+    console.log(`User 1 has ${user1Answers.size} common answers, User 2 has ${user2Answers.size} common answers`);
     
     // Now compare answers and build results
     let matchCount = 0;
@@ -168,7 +187,12 @@ export const gameService = {
     for (const [questionId, user1Answer] of user1Answers.entries()) {
       const user2Answer = user2Answers.get(questionId);
       
-      if (!user2Answer) continue; // Skip if second user didn't answer this question
+      if (!user2Answer) {
+        console.log(`User 2 didn't answer question ${questionId}`);
+        continue; // Skip if second user didn't answer this question
+      }
+      
+      console.log(`Comparing answers for question "${user1Answer.questionText}": "${user1Answer.answerText}" vs "${user2Answer.answerText}"`);
       
       // Check if answers match
       if (user1Answer.answerText === user2Answer.answerText) {
@@ -177,20 +201,26 @@ export const gameService = {
           question: user1Answer.questionText,
           answer: user1Answer.answerText
         });
+        console.log(`✓ Match found!`);
       } else {
         nonMatchingAnswers.push({
           question: user1Answer.questionText,
           yourAnswer: user1Answer.answerText,
           partnerAnswer: user2Answer.answerText
         });
+        console.log(`✗ No match!`);
       }
     }
     
     // Calculate match percentage based on total common questions answered
-    const commonQuestionsAnswered = Math.min(user1Answers.size, 5); // Cap at 5 common questions
+    const commonQuestionsAnswered = user1Answers.size; // Use actual number of common questions answered
     const matchPercentage = commonQuestionsAnswered > 0 
       ? Math.round((matchCount / commonQuestionsAnswered) * 100)
       : 0;
+    
+    console.log(`Match results: ${matchCount}/${commonQuestionsAnswered} = ${matchPercentage}%`);
+    console.log(`Matching answers: ${JSON.stringify(matchingAnswers)}`);
+    console.log(`Non-matching answers: ${JSON.stringify(nonMatchingAnswers)}`);
     
     // Update the session with match percentage
     await db.update(gameSessions)

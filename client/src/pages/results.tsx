@@ -27,7 +27,19 @@ export default function Results() {
       
       setIsLoading(true);
       try {
+        console.log(`Fetching results for session code: ${sessionCode}`);
         const resultData = await fetchGameResults(sessionCode);
+        console.log("Results data received:", resultData);
+        
+        if (!resultData) {
+          throw new Error("No results data returned from server");
+        }
+        
+        if (!resultData.matchingAnswers || !resultData.nonMatchingAnswers) {
+          console.error("Invalid results format:", resultData);
+          throw new Error("Invalid results format from server");
+        }
+        
         setResults(resultData);
       } catch (error) {
         console.error("Error loading results:", error);

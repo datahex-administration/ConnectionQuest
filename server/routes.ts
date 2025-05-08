@@ -416,31 +416,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sessions/:code/results", async (req, res) => {
     try {
       const userId = getUserIdFromRequest(req);
+      console.log(`User ${userId} requesting results for session code`);
       
       if (!userId) {
         return res.status(401).json({ error: "User not logged in" });
       }
 
       const { code } = req.params;
+      console.log(`Calculating matches for session code: ${code}`);
+      
+      // Check if game session exists first
+      const gameSession = await storage.getGameSessionByCode(code);
+      if (!gameSession) {
+        console.log(`Session with code ${code} not found`);
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      // Check if both users have submitted answers
+      const allAnswersSubmitted = await storage.areAllAnswersSubmitted(gameSession.id);
+      if (!allAnswersSubmitted) {
+        console.log(`Not all answers submitted for session ${code}`);
+        return res.status(400).json({ error: "Not all participants have submitted their answers" });
+      }
+
+      // Calculate match results
       const results = await gameService.calculateMatches(code);
       
       if (!results) {
+        console.log(`No results available for session ${code}`);
         return res.status(404).json({ error: "Results not available" });
       }
+      
+      console.log(`Results calculated for session ${code}:`, JSON.stringify(results));
       
       // Create a voucher for the session if match percentage is above threshold (50% or higher)
       let voucher = null;
       if (results.matchPercentage >= 50) {
-        voucher = await gameService.generateVoucher(results.sessionId, results.matchPercentage);
+        // Check if voucher already exists
+        const existingVoucher = await storage.getVoucherBySessionId(gameSession.id);
+        
+        if (existingVoucher) {
+          console.log(`Using existing voucher for session ${code}:`, existingVoucher);
+          voucher = {
+            voucherId: existingVoucher.id,
+            voucherCode: existingVoucher.voucherCode,
+            discount: existingVoucher.discount,
+            validUntil: existingVoucher.validUntil.toISOString()
+          };
+        } else {
+          console.log(`Generating new voucher for session ${code} with match percentage ${results.matchPercentage}%`);
+          voucher = await gameService.generateVoucher(results.sessionId, results.matchPercentage);
+        }
+      } else {
+        console.log(`Match percentage ${results.matchPercentage}% too low for voucher`);
       }
       
-      return res.status(200).json({
+      const response = {
         ...results,
         voucher
-      });
+      };
+      
+      console.log(`Sending results response for session ${code}:`, JSON.stringify(response));
+      return res.status(200).json(response);
     } catch (error) {
       console.error("Error calculating results:", error);
-      return res.status(500).json({ error: "Failed to calculate results" });
+      return res.status(500).json({ error: "Failed to calculate results", message: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
