@@ -114,16 +114,15 @@ export default function Game() {
     };
   }, [sessionCode, userId, navigate, toast, checkUserSessionStatus]); // Include dependencies but with isMounted guard to prevent over-polling
   
-  const handleAnswerSelect = (questionId: number, optionIndex: number, answerText: string) => {
+  const handleAnswerSelect = (questionId: number, optionId: number, answerText: string) => {
     // Create a copy of the answers map and update it
     const newAnswers = new Map(answers);
     newAnswers.set(questionId, { 
-      optionId: optionIndex + 1, // Assuming option IDs start from 1
+      optionId, // Use the actual option ID from the database
       answer: answerText 
     });
     console.log(`Selected answer for question ${questionId}:`, {
-      optionIndex,
-      optionId: optionIndex + 1,
+      optionId,
       answerText
     });
     setAnswers(newAnswers);
@@ -275,16 +274,18 @@ export default function Game() {
                       value={answers.get(currentQuestion.id)?.answer || ""}
                       className="space-y-3"
                       onValueChange={(value) => {
-                        const optionIndex = currentQuestion.options.findIndex(opt => opt === value);
-                        handleAnswerSelect(currentQuestion.id, optionIndex, value);
+                        const selectedOption = currentQuestion.options.find(opt => opt.text === value);
+                        if (selectedOption) {
+                          handleAnswerSelect(currentQuestion.id, selectedOption.id, selectedOption.text);
+                        }
                       }}
                     >
-                      {currentQuestion.options.map((option, i) => (
-                        <div key={i} className="option-container">
+                      {currentQuestion.options.map((option) => (
+                        <div key={option.id} className="option-container">
                           <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-primary/5 transition-all">
-                            <RadioGroupItem value={option} id={`q${currentQuestion.id}-option${i+1}`} />
-                            <Label htmlFor={`q${currentQuestion.id}-option${i+1}`} className="flex-1 cursor-pointer">
-                              <span className="text-gray-700">{option}</span>
+                            <RadioGroupItem value={option.text} id={`q${currentQuestion.id}-option${option.id}`} />
+                            <Label htmlFor={`q${currentQuestion.id}-option${option.id}`} className="flex-1 cursor-pointer">
+                              <span className="text-gray-700">{option.text}</span>
                             </Label>
                           </div>
                         </div>

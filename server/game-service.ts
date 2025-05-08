@@ -7,7 +7,10 @@ import { gameSessions } from "@shared/schema";
 export interface GameQuestion {
   id: number;
   text: string;
-  options: string[];
+  options: Array<{
+    id: number;
+    text: string;
+  }>;
   type: string;
 }
 
@@ -78,17 +81,28 @@ export const gameService = {
     const commonQuestions = await storage.getQuestions("common");
     const individualQuestions = await storage.getQuestions("individual");
 
+    console.log("Raw questions from DB:", {
+      common: commonQuestions,
+      individual: individualQuestions
+    });
+
     return {
       commonQuestions: commonQuestions.slice(0, 5).map(q => ({
         id: q.id,
         text: q.text,
-        options: q.options.map(o => o.optionText),
+        options: q.options.map(o => ({
+          id: o.id,
+          text: o.optionText
+        })),
         type: q.questionType
       })),
       individualQuestions: individualQuestions.slice(0, 2).map(q => ({
         id: q.id,
         text: q.text,
-        options: q.options.map(o => o.optionText),
+        options: q.options.map(o => ({
+          id: o.id,
+          text: o.optionText
+        })),
         type: q.questionType
       }))
     };
@@ -219,7 +233,7 @@ export const gameService = {
     
     console.log(`Match calculation complete: ${matchCount} matches out of ${totalQuestions} questions (${matchPercentage}%)`);
     console.log("Final results:", {
-      matchPercentage,
+        matchPercentage,
       matchingAnswers,
       nonMatchingAnswers
     });

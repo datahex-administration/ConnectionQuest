@@ -2,6 +2,17 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
+import dotenv from 'dotenv';
+
+console.log('Current working directory:', process.cwd());
+console.log('Loading .env file from:', path.resolve(process.cwd(), '.env'));
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
+
+// Add logging for environment variables (excluding sensitive ones)
+log('Environment variables loaded');
+log(`NODE_ENV: ${process.env.NODE_ENV}`);
+log(`DATABASE_URL: ${process.env.DATABASE_URL ? 'Set' : 'Not set'}`);
 
 const app = express();
 app.use(express.json());
