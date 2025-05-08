@@ -37,6 +37,18 @@ export default function Game() {
       setIsLoading(true);
       try {
         const questions = await fetchGameQuestions(sessionCode);
+        console.log("Loaded questions:", {
+          commonQuestions: questions.commonQuestions.map(q => ({
+            id: q.id,
+            text: q.text,
+            options: q.options
+          })),
+          individualQuestions: questions.individualQuestions.map(q => ({
+            id: q.id,
+            text: q.text,
+            options: q.options
+          }))
+        });
         setCommonQuestions(questions.commonQuestions);
         setIndividualQuestions(questions.individualQuestions);
       } catch (error) {
@@ -109,6 +121,11 @@ export default function Game() {
       optionId: optionIndex + 1, // Assuming option IDs start from 1
       answer: answerText 
     });
+    console.log(`Selected answer for question ${questionId}:`, {
+      optionIndex,
+      optionId: optionIndex + 1,
+      answerText
+    });
     setAnswers(newAnswers);
   };
   
@@ -170,6 +187,8 @@ export default function Game() {
       questionId,
       optionId: data.optionId
     }));
+    
+    console.log("Submitting answers:", answerArray);
     
     try {
       await submitAnswers(sessionCode, answerArray);

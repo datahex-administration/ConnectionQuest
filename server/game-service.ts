@@ -148,9 +148,13 @@ export const gameService = {
     const user2Answers = new Map<number, { questionText: string, answerText: string, questionType: string }>();
     
     // Debug answers
-    sessionAnswers.forEach(answer => {
-      console.log(`Answer from user ${answer.userId} for question ${answer.questionId}: "${answer.question.text}" - "${answer.selectedOption.optionText}"`);
-    });
+    console.log("Raw session answers:", sessionAnswers.map(answer => ({
+      userId: answer.userId,
+      questionId: answer.questionId,
+      questionText: answer.question.text,
+      selectedOptionId: answer.selectedOptionId,
+      selectedOptionText: answer.selectedOption.optionText
+    })));
     
     // Fill the maps with all answers
     sessionAnswers.forEach(answer => {
@@ -162,10 +166,10 @@ export const gameService = {
       
       if (answer.userId === userId1) {
         user1Answers.set(answer.questionId, answerInfo);
-        console.log(`User 1 answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
+        console.log(`User 1 (${userId1}) answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
       } else if (answer.userId === userId2) {
         user2Answers.set(answer.questionId, answerInfo);
-        console.log(`User 2 answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
+        console.log(`User 2 (${userId2}) answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
       }
     });
     
@@ -214,6 +218,11 @@ export const gameService = {
     const matchPercentage = totalQuestions > 0 ? Math.round((matchCount / totalQuestions) * 100) : 0;
     
     console.log(`Match calculation complete: ${matchCount} matches out of ${totalQuestions} questions (${matchPercentage}%)`);
+    console.log("Final results:", {
+      matchPercentage,
+      matchingAnswers,
+      nonMatchingAnswers
+    });
     
     return {
       matchPercentage,
