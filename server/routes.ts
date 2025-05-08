@@ -439,8 +439,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Not all participants have submitted their answers" });
       }
 
-      // Calculate match results
-      const results = await gameService.calculateMatches(code);
+      // Calculate match results (pass userId for perspective)
+      const results = await gameService.calculateMatches(code, userId);
       
       if (!results) {
         console.log(`No results available for session ${code}`);
