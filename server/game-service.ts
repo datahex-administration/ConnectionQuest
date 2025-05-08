@@ -129,7 +129,7 @@ export const gameService = {
     }
   },
 
-  async calculateMatches(sessionCode: string): Promise<MatchResult | null> {
+  async calculateMatches(sessionCode: string, requestingUserId?: number): Promise<MatchResult | null> {
     console.log(`Calculating matches for session: ${sessionCode}`);
     
     const session = await storage.getGameSessionByCode(sessionCode);
@@ -152,15 +152,19 @@ export const gameService = {
     const allQuestions = await storage.getQuestions();
     console.log(`Found ${allQuestions.length} total questions`);
     
-    // First user ID to use as reference for "your" vs "partner's" answers
-    const userId1 = participants[0].id;
-    const userId2 = participants[1].id;
-    console.log(`Comparing answers between users: ${userId1} and ${userId2}`);
-    
+    // Determine which user is 'you' and which is 'partner'
+    let userId1 = participants[0].id;
+    let userId2 = participants[1].id;
+    if (requestingUserId && userId2 === requestingUserId) {
+      // Swap so that userId1 is always the requesting user
+      [userId1, userId2] = [userId2, userId1];
+    }
+    console.log(`Comparing answers between users: you=${userId1}, partner=${userId2}`);
+
     // Create maps for each participant's answers
     const user1Answers = new Map<number, { questionText: string, answerText: string, questionType: string }>();
     const user2Answers = new Map<number, { questionText: string, answerText: string, questionType: string }>();
-    
+
     // Debug answers
     console.log("Raw session answers:", sessionAnswers.map(answer => ({
       userId: answer.userId,
@@ -169,7 +173,7 @@ export const gameService = {
       selectedOptionId: answer.selectedOptionId,
       selectedOptionText: answer.selectedOption.optionText
     })));
-    
+
     // Fill the maps with all answers
     sessionAnswers.forEach(answer => {
       const answerInfo = {
@@ -180,34 +184,34 @@ export const gameService = {
       
       if (answer.userId === userId1) {
         user1Answers.set(answer.questionId, answerInfo);
-        console.log(`User 1 (${userId1}) answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
+        console.log(`You (${userId1}) answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
       } else if (answer.userId === userId2) {
         user2Answers.set(answer.questionId, answerInfo);
-        console.log(`User 2 (${userId2}) answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
+        console.log(`Partner (${userId2}) answered "${answerInfo.answerText}" to "${answerInfo.questionText}"`);
       }
     });
-    
-    console.log(`User 1 has ${user1Answers.size} answers, User 2 has ${user2Answers.size} answers`);
-    
+
+    console.log(`You have ${user1Answers.size} answers, partner has ${user2Answers.size} answers`);
+
     // Now compare answers and build results
     let matchCount = 0;
     const matchingAnswers: { question: string, answer: string }[] = [];
     const nonMatchingAnswers: { question: string, yourAnswer: string, partnerAnswer: string }[] = [];
-    
+
     // Process only questions both users have answered
     // Convert Map.entries() to array to avoid TypeScript iterator issues
     const user1EntriesArray = Array.from(user1Answers.entries());
-    
+
     for (let i = 0; i < user1EntriesArray.length; i++) {
       const [questionId, user1Answer] = user1EntriesArray[i];
       const user2Answer = user2Answers.get(questionId);
       
       if (!user2Answer) {
-        console.log(`User 2 didn't answer question ${questionId}`);
+        console.log(`Partner didn't answer question ${questionId}`);
         continue; // Skip if second user didn't answer this question
       }
       
-      console.log(`Comparing answers for question "${user1Answer.questionText}": "${user1Answer.answerText}" vs "${user2Answer.answerText}"`);
+      console.log(`Comparing answers for question "${user1Answer.questionText}": "${user1Answer.answerText}" (you) vs "${user2Answer.answerText}" (partner)`);
       
       // Check if answers match
       if (user1Answer.answerText === user2Answer.answerText) {
@@ -226,18 +230,18 @@ export const gameService = {
         console.log(`✗ No match`);
       }
     }
-    
+
     // Calculate match percentage based on total questions answered by both users
     const totalQuestions = matchingAnswers.length + nonMatchingAnswers.length;
     const matchPercentage = totalQuestions > 0 ? Math.round((matchCount / totalQuestions) * 100) : 0;
-    
+
     console.log(`Match calculation complete: ${matchCount} matches out of ${totalQuestions} questions (${matchPercentage}%)`);
     console.log("Final results:", {
         matchPercentage,
       matchingAnswers,
       nonMatchingAnswers
     });
-    
+
     return {
       matchPercentage,
       matchingAnswers,
