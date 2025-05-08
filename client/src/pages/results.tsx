@@ -29,7 +29,12 @@ export default function Results() {
       try {
         console.log(`Fetching results for session code: ${sessionCode}`);
         const resultData = await fetchGameResults(sessionCode);
-        console.log("Results data received:", resultData);
+        console.log("Results data received:", {
+          matchPercentage: resultData.matchPercentage,
+          matchingAnswersCount: resultData.matchingAnswers?.length,
+          nonMatchingAnswersCount: resultData.nonMatchingAnswers?.length,
+          totalAnswers: (resultData.matchingAnswers?.length || 0) + (resultData.nonMatchingAnswers?.length || 0)
+        });
         
         if (!resultData) {
           throw new Error("No results data returned from server");
@@ -112,7 +117,7 @@ export default function Results() {
                     <div className="absolute inset-2 rounded-full border-4 border-white/20"></div>
                     <span className="text-5xl">{results?.matchPercentage || 0}<span className="text-2xl align-top">%</span></span>
                   </div>
-                  <h2 className="text-2xl font-bold text-primary mt-5">Compatibility Score</h2>
+                  <h2 className="text-2xl font-bold text-purple-500 mt-5">Compatibility Score</h2>
                   <p className="text-gray-900 mt-2 font-medium">
                     {results?.matchPercentage ? 
                       results.matchPercentage >= 80 
