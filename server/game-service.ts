@@ -184,7 +184,11 @@ export const gameService = {
     const nonMatchingAnswers: { question: string, yourAnswer: string, partnerAnswer: string }[] = [];
     
     // Process only questions both users have answered
-    for (const [questionId, user1Answer] of user1Answers.entries()) {
+    // Convert Map.entries() to array to avoid TypeScript iterator issues
+    const user1EntriesArray = Array.from(user1Answers.entries());
+    
+    for (let i = 0; i < user1EntriesArray.length; i++) {
+      const [questionId, user1Answer] = user1EntriesArray[i];
       const user2Answer = user2Answers.get(questionId);
       
       if (!user2Answer) {
