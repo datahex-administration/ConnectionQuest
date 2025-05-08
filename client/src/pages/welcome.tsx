@@ -45,9 +45,10 @@ export default function Welcome() {
       <div className="bg-gradient-to-b from-primary/10 to-secondary py-6 md:py-10">
         <div className="container px-3 mx-auto max-w-4xl">
           <div className="flex flex-col items-center justify-center text-center">
-            {/* Mawadha logo - Larger and more readable */}
+            {/* Mawadha logo and tagline - Larger and more readable */}
             <div className="mb-8 flex flex-col items-center">
-              <img src="/images/mawadha-logo.png" alt="Mawadha Logo" className="h-32 md:h-40 w-auto" />
+              <img src="/images/mawadha-logo.png" alt="Mawadha Logo" className="h-40 md:h-48 w-auto mb-3" />
+              <img src="/images/mawadha-letter.png" alt="Mawadha - Be a better half" className="h-16 md:h-20 w-auto" />
             </div>
 
             {/* Main content */}
