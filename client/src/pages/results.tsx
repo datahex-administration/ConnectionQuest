@@ -100,8 +100,8 @@ export default function Results() {
                     <div className="absolute inset-2 rounded-full border-4 border-white/20"></div>
                     <span className="text-5xl">{results?.matchPercentage || 0}<span className="text-2xl align-top">%</span></span>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-5">Compatibility Score</h2>
-                  <p className="text-gray-600 mt-2">
+                  <h2 className="text-2xl font-bold text-primary mt-5">Compatibility Score</h2>
+                  <p className="text-gray-900 mt-2 font-medium">
                     {results?.matchPercentage ? 
                       results.matchPercentage >= 80 
                         ? "You and your partner are a perfect match!"
@@ -118,9 +118,14 @@ export default function Results() {
                 {results?.matchingAnswers && results.matchingAnswers.length > 0 && (
                   <div className="bg-primary/10 rounded-lg p-4 mb-4">
                     <h3 className="font-semibold text-primary mb-2">Matching Answers:</h3>
-                    <ul className="list-disc list-inside text-gray-700 space-y-1">
+                    <ul className="list-disc list-inside text-gray-700 space-y-2">
                       {results.matchingAnswers.map((match, index) => (
-                        <li key={index}><span className="font-medium">{match.question}:</span> You both chose <span className="text-primary font-medium">{match.answer}</span></li>
+                        <li key={index} className="leading-relaxed">
+                          <span className="font-medium text-gray-800">{match.question}:</span> 
+                          <br className="md:hidden" />
+                          <span className="ml-0 md:ml-1">You both chose </span>
+                          <span className="text-primary font-medium">{match.answer}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -129,16 +134,18 @@ export default function Results() {
                 {results?.nonMatchingAnswers && results.nonMatchingAnswers.length > 0 && (
                   <div className="bg-accent/10 rounded-lg p-4 mb-6">
                     <h3 className="font-semibold text-accent mb-2">Different Answers:</h3>
-                    <ul className="list-none text-gray-700 space-y-3">
+                    <ul className="list-none text-gray-700 space-y-4">
                       {results.nonMatchingAnswers.map((item, index) => (
-                        <li key={index} className="border-b border-accent/10 pb-2 last:border-0 last:pb-0">
-                          <p className="font-medium text-gray-800">{item.question}</p>
-                          <div className="grid grid-cols-2 gap-2 mt-1 text-sm">
-                            <div>
-                              <span className="text-primary/80 font-medium">You:</span> {item.yourAnswer}
+                        <li key={index} className="border-b border-accent/10 pb-3 last:border-0 last:pb-0">
+                          <p className="font-medium text-gray-800 mb-2">{item.question}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+                            <div className="bg-primary/5 p-2 rounded">
+                              <span className="text-primary font-medium block mb-1">You chose:</span> 
+                              <span className="text-gray-700">{item.yourAnswer}</span>
                             </div>
-                            <div>
-                              <span className="text-accent/80 font-medium">Partner:</span> {item.partnerAnswer}
+                            <div className="bg-accent/5 p-2 rounded">
+                              <span className="text-accent font-medium block mb-1">Partner chose:</span> 
+                              <span className="text-gray-700">{item.partnerAnswer}</span>
                             </div>
                           </div>
                         </li>
@@ -177,33 +184,33 @@ export default function Results() {
                           <h3 className="text-xl font-bold text-white mb-1 text-shadow">You've Earned a Voucher!</h3>
                           <div className="flex items-center justify-center gap-2 mb-4">
                             <div className="bg-white/20 rounded-full h-5 w-5 flex items-center justify-center">
-                              <HeartPulse className="h-3 w-3 text-white" />
+                              <HeartPulse className="h-3 w-3 text-primary" />
                             </div>
-                            <p className="text-white/90 text-sm">
+                            <p className="text-primary text-sm">
                               Match percentage: <span className="font-bold">{results.matchPercentage}%</span>
                             </p>
                             <div className="bg-white/20 rounded-full h-5 w-5 flex items-center justify-center">
-                              <HeartPulse className="h-3 w-3 text-white" />
+                              <HeartPulse className="h-3 w-3 text-primary" />
                             </div>
                           </div>
                           
-                          <div className="my-5 py-4 border-t border-b border-white/40 bg-white/10 backdrop-blur-sm rounded-md shadow-inner">
-                            <p className="text-white font-bold text-4xl tracking-wide drop-shadow-md">
+                          <div className="my-5 py-4 border-t border-b border-primary/40 bg-white/20 backdrop-blur-sm rounded-md shadow-inner">
+                            <p className="text-primary font-bold text-4xl tracking-wide drop-shadow-md">
                               {results.voucher.discount}
                             </p>
-                            <p className="text-white uppercase tracking-widest text-xs font-medium mt-1 letter-spacing-wide">
+                            <p className="text-primary uppercase tracking-widest text-xs font-medium mt-1 letter-spacing-wide">
                               {results.voucher.discount.includes('%') ? 'DISCOUNT VOUCHER' : 'CASH VOUCHER'}
                             </p>
                           </div>
                           
-                          <div className="bg-white/10 backdrop-blur-md rounded-lg p-3.5 mb-3 border border-white/20 shadow-inner">
-                            <p className="text-xs text-white/80 mb-1 uppercase tracking-wider">VOUCHER CODE</p>
-                            <p className="text-white font-mono font-bold tracking-[0.2em] text-lg">
+                          <div className="bg-white/20 backdrop-blur-md rounded-lg p-3.5 mb-3 border border-primary/20 shadow-inner">
+                            <p className="text-xs text-primary mb-1 uppercase tracking-wider font-medium">VOUCHER CODE</p>
+                            <p className="text-primary font-mono font-bold tracking-[0.2em] text-lg">
                               {results.voucher.voucherCode}
                             </p>
                           </div>
                           
-                          <p className="text-white/90 text-xs mb-4 bg-white/15 rounded-full py-1.5 px-4 inline-block shadow-sm">
+                          <p className="text-primary text-xs mb-4 bg-white/20 rounded-full py-1.5 px-4 inline-block shadow-sm">
                             Valid until: {new Date(results.voucher.validUntil).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
