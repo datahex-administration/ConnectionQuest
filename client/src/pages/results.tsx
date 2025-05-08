@@ -115,7 +115,7 @@ export default function Results() {
                   <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-primary text-white font-bold shadow-lg relative" style={{ boxShadow: '0 0 20px rgba(142, 44, 142, 0.5)' }}>
                     <div className="absolute inset-0 rounded-full bg-white opacity-10"></div>
                     <div className="absolute inset-2 rounded-full border-4 border-white/20"></div>
-                    <span className="text-5xl">{results?.matchPercentage || 0}<span className="text-2xl align-top">%</span></span>
+                    <span className="text-5xl text-purple-500">{results?.matchPercentage || 0}<span className="text-2xl align-top">%</span></span>
                   </div>
                   <h2 className="text-2xl font-bold text-purple-500 mt-5">Compatibility Score</h2>
                   <p className="text-gray-900 mt-2 font-medium">
@@ -265,7 +265,7 @@ export default function Results() {
                     onClick={() => navigate('/')}
                     className="flex items-center gap-2 py-3 px-5 rounded-full"
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="h-4 w-4 text-purple-500" />
                     Back to Welcome
                   </Button>
                 </div>
