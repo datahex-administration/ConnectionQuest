@@ -111,26 +111,48 @@ export default function Results() {
               </div>
             ) : (
               <div>
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-primary text-white font-bold shadow-lg relative" style={{ boxShadow: '0 0 20px rgba(142, 44, 142, 0.5)' }}>
-                    <div className="absolute inset-0 rounded-full bg-white opacity-10"></div>
-                    <div className="absolute inset-2 rounded-full border-4 border-white/20"></div>
-                    <span className="text-5xl text-purple-500">{results?.matchPercentage || 0}<span className="text-2xl align-top">%</span></span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-purple-500 mt-5">Compatibility Score</h2>
-                  <p className="text-gray-900 mt-2 font-medium">
-                    {results?.matchPercentage ? 
-                      results.matchPercentage >= 80 
-                        ? "You and your partner are a perfect match!"
-                        : results.matchPercentage >= 60
-                          ? "You and your partner are a great match!"
-                          : results.matchPercentage >= 40
-                            ? "You and your partner have potential!"
-                            : "You and your partner have room to grow together!"
-                        : "No matching answers found"
-                    }
-                  </p>
-                </div>
+               
+  <div className="text-center mb-8">
+  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-primary text-white font-bold shadow-lg relative" style={{ boxShadow: '0 0 20px rgba(142, 44, 142, 0.5)' }}>
+    <div className="absolute inset-0 rounded-full bg-white opacity-10"></div>
+    <div className="absolute inset-2 rounded-full border-4 border-white/20"></div>
+    <span className="text-5xl text-purple-500">{results?.matchPercentage || 0}<span className="text-2xl align-top">%</span></span>
+  </div>
+  <h2 className="text-2xl font-bold text-purple-500 mt-5">Compatibility Score</h2>
+  <div></div>
+  {results?.matchPercentage ? (
+    <div className="text-gray-900 mt-2 font-medium">
+      <p>Thank you for playing the Mawadha Mirror Quiz with your partner!</p>
+      <p className="font-bold">
+        {Number(results.matchPercentage) >= 81
+          ? "'Deeply Connected'"
+          : Number(results.matchPercentage) >= 51
+            ? "'Beautiful Reflection'"
+            : Number(results.matchPercentage) >= 31
+              ? "'Getting Clearer'"
+              : "'Mirror needs polishing'"
+        }
+      </p>
+      <p className="italic mt-2">
+        {Number(results.matchPercentage) >= 81
+          ? "\"You're soul mirrors. Keep this light alive!\""
+          : Number(results.matchPercentage) >= 51
+            ? "\"You understand each other well — keep nurturing your emotional garden.\""
+            : Number(results.matchPercentage) >= 31
+              ? "\"You're learning each other. Every honest attempt builds your bond.\""
+              : "\"Every connection starts somewhere. Keep reflecting with love and courage.\""
+        }
+      </p>
+      <p className="mt-2">
+        Keep growing, keep reflecting.<br />
+        — Team Mawadha
+      </p>
+    </div>
+  ) : (
+    <p className="text-gray-900 mt-2 font-medium">No matching answers found</p>
+  )}
+</div>
+  
                 
                 {results?.matchingAnswers && results.matchingAnswers.length > 0 && (
                   <div className="bg-primary/10 rounded-lg p-4 mb-4">
